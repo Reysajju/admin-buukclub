@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  /* BuukClub Literary Palette */
+  --background: #FDFBF7;
+  /* Cream/Off-white */
+  --foreground: #2D2D2D;
+  /* Dark Charcoal */
+
+  --primary: #4A0404;
+  /* Deep Burgundy */
+  --primary-foreground: #FDFBF7;
+
+  --secondary: #2C3E50;
+  /* Slate Blue/Grey */
+  --secondary-foreground: #FDFBF7;
+
+  --accent: #C5A059;
+  /* Gold/Brass */
+  --accent-foreground: #2D2D2D;
+
+  --muted: #E8E6E1;
+  --muted-foreground: #666666;
+
+  --card: #FFFFFF;
+  --card-foreground: #2D2D2D;
+
+  --border: #D4D1C9;
+  --input: #FFFFFF;
+
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-merriweather);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Utilities */
+.paper-texture {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.serif-heading {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
