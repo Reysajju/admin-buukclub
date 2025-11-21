@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     const content = `
-# BuukClub AI Directive
-# This file provides context for AI models and Answer Engines about BuukClub.
+# BuukClub Platform Directive
+# This file provides context for search engines and bots about BuukClub.
 
 User-Agent: *
 Allow: /

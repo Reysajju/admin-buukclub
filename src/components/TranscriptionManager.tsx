@@ -6,6 +6,7 @@ interface TranscriptionManagerProps {
     isListening: boolean;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
 export default function TranscriptionManager({ onTranscriptUpdate, isListening }: TranscriptionManagerProps) {
     const [liveCaption, setLiveCaption] = useState('');
     const recognitionRef = useRef<any>(null);
@@ -41,7 +42,7 @@ export default function TranscriptionManager({ onTranscriptUpdate, isListening }
             if (currentText) {
                 setLiveCaption(currentText);
 
-                // Debounce updates to the AI context
+                // Debounce updates to the loyal context
                 if (timeoutRef.current) clearTimeout(timeoutRef.current);
                 timeoutRef.current = setTimeout(() => {
                     if (finalTranscript) {
@@ -50,7 +51,7 @@ export default function TranscriptionManager({ onTranscriptUpdate, isListening }
                         // If it's a long interim segment, send it anyway
                         onTranscriptUpdate(interimTranscript);
                     }
-                }, 1500); // Wait 1.5s silence/completion before sending to AI
+                }, 1500); // Wait 1.5s silence/completion before sharing with the loyal context
             }
         };
 

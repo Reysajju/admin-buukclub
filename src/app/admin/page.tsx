@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
 import { X, MessageSquare, LogOut, Upload } from 'lucide-react';
