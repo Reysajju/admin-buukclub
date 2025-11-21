@@ -1,30 +1,48 @@
 'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import {
     LiveKitRoom,
     VideoConference,
     RoomAudioRenderer,
+    useTracks,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
+import { Track } from 'livekit-client';
+
+import ReactionOverlay from './ReactionOverlay';
+import TranscriptionManager from './TranscriptionManager';
+import ChatOverlay from './ChatOverlay';
 
 interface VideoRoomProps {
     roomName: string;
     onDisconnect: () => void;
+    onTranscriptUpdate?: (text: string) => void;
+    latestComment?: any;
+    isPublisher?: boolean; // New prop to distinguish Host vs Reader
 }
 
-export default function VideoRoom({ roomName, onDisconnect }: VideoRoomProps) {
+export default function VideoRoom({
+    roomName,
+    onDisconnect,
+    onTranscriptUpdate,
+    latestComment,
+    isPublisher = true
+}: VideoRoomProps) {
     const [token, setToken] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>('');
+    const [isListening, setIsListening] = useState(true);
 
     // Fetch token when component mounts
     useEffect(() => {
         async function fetchToken() {
             try {
-                // Use test endpoint for admin page (no auth required)
+                // Determine role based on isPublisher
+                const role = isPublisher ? 'publisher' : 'subscriber';
                 const response = await fetch(
-                    `/api/live/get-test-token?roomName=${encodeURIComponent(roomName)}`
+                    `/api/live/get-test-token?roomName=${encodeURIComponent(roomName)}&role=${role}`
                 );
 
                 if (!response.ok) {
@@ -42,7 +60,7 @@ export default function VideoRoom({ roomName, onDisconnect }: VideoRoomProps) {
         }
 
         fetchToken();
-    }, [roomName]);
+    }, [roomName, isPublisher]);
 
     if (loading) {
         return (
@@ -74,10 +92,10 @@ export default function VideoRoom({ roomName, onDisconnect }: VideoRoomProps) {
     }
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full relative group bg-black">
             <LiveKitRoom
-                video={true}
-                audio={true}
+                video={isPublisher} // Only publish if publisher
+                audio={isPublisher} // Only publish if publisher
                 token={token}
                 serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
                 data-lk-theme="default"
@@ -87,6 +105,18 @@ export default function VideoRoom({ roomName, onDisconnect }: VideoRoomProps) {
                 <VideoConference />
                 <RoomAudioRenderer />
             </LiveKitRoom>
+
+            {/* Overlays */}
+            <ReactionOverlay />
+            <ChatOverlay latestComment={latestComment} />
+
+            {/* Transcription disabled by default unless prop provided */}
+            {onTranscriptUpdate && (
+                <TranscriptionManager
+                    onTranscriptUpdate={onTranscriptUpdate}
+                    isListening={isListening}
+                />
+            )}
         </div>
     );
 }

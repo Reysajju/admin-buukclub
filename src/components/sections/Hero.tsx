@@ -39,14 +39,14 @@ export function Hero() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 leading-tight">
-                        Stop Donating <span className="text-primary text-glow relative inline-block">
-                            70%
+                        Turn Readers into <span className="text-primary text-glow relative inline-block">
+                            Loyal Fans
                             <svg className="absolute -bottom-2 left-0 w-full h-3 text-accent opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none">
                                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="2" fill="none" />
                             </svg>
-                        </span> of Your
+                        </span> Who
                         <br />
-                        Royalties to Amazon.
+                        Champion Your Work.
                     </h1>
                 </motion.div>
 
@@ -56,9 +56,9 @@ export function Hero() {
                     transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                 >
                     <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-                        Build a High-Ticket Live Book Club. Your Fans, Your Data, Your Revenue.
+                        Host live book club meetings and build an engaged community.
                         <br className="hidden md:block" />
-                        <span className="text-foreground font-medium mt-2 block">Real authors have communities. Amateurs have readers.</span>
+                        <span className="text-foreground font-medium mt-2 block">Collect emails. Grow your audience. Sell more books.</span>
                     </p>
                 </motion.div>
 

@@ -10,61 +10,61 @@ const waitlistDemands = [
     {
         name: "Sarah J.",
         role: "Romance Author",
-        quote: "I've been on the waitlist for 2 months. Amazon took 65% of my last royalty check. I NEED this platform.",
+        quote: "I spent $500 on ads and got zero sales. With BuukClub, I know exactly how many views I'm getting.",
         avatar: "S",
     },
     {
         name: "Marcus T.",
         role: "Sci-Fi Writer",
-        quote: "Dying to get access. I'm tired of Amazon owning my reader relationships. When is my invite coming?",
+        quote: "Guaranteed views changed everything. I stopped guessing and started growing.",
         avatar: "M",
     },
     {
         name: "Elena R.",
         role: "Non-Fiction",
-        quote: "I applied the day I heard about this. 70% revenue share sounds like a dream. Please let me in!",
+        quote: "Finally, a platform that actually delivers an audience instead of just taking my money.",
         avatar: "E",
     },
     {
         name: "David K.",
         role: "Thriller Author",
-        quote: "Been watching this for months. I'm ready to build a REAL community, not just sell books. Desperately waiting.",
+        quote: "I was skeptical about 'guaranteed views' but the numbers don't lie. My reader base has doubled.",
         avatar: "D",
     },
     {
         name: "Jessica L.",
         role: "Fantasy Writer",
-        quote: "My readers keep asking for a closer connection. This is EXACTLY what I need. Hoping for early access!",
+        quote: "No more shouting into the void. 10 views per dollar is the best ROI I've seen in publishing.",
         avatar: "J",
     },
     {
         name: "Tyler M.",
         role: "Mystery Author",
-        quote: "I'd pay to skip the waitlist. Amazon's algorithm killed my last launch. This could save my career.",
+        quote: "Amazon ads are a black box. BuukClub is transparent growth. I'm never going back.",
         avatar: "T",
     },
     {
         name: "Amanda K.",
         role: "YA Fiction",
-        quote: "My author friends won't stop talking about this. I need in NOW. The suspense is killing me!",
+        quote: "My readers are actually engaging now. It's not just views, it's real people.",
         avatar: "A",
     },
     {
         name: "Robert P.",
         role: "Historical Fiction",
-        quote: "I've made $47K on Amazon this year. They kept $33K of it. Waiting for BuukClub to change my life.",
+        quote: "I used to pray for visibility. Now I just budget for it. Simple, effective, guaranteed.",
         avatar: "R",
     },
     {
         name: "Nina S.",
         role: "Poetry",
-        quote: "Amazon doesn't care about poets. This platform gets it. I'm checking my email every hour for my invite.",
+        quote: "Finding poetry readers is hard. BuukClub made it easy. The view guarantee is a game changer.",
         avatar: "N",
     },
     {
         name: "Chris H.",
         role: "Business Books",
-        quote: "My coaching clients would LOVE live book clubs. How do I move up the waitlist? This is urgent.",
+        quote: "For non-fiction, targeted views are everything. This platform delivers exactly what it promises.",
         avatar: "C",
     }
 ];
@@ -130,8 +130,8 @@ export function SocialProof() {
         <section className="py-20 overflow-hidden bg-muted/10">
             <div className="container px-4 md:px-6 mb-12">
                 <div className="text-center">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4 serif-heading">Authors Are Desperate for Access</h2>
-                    <p className="text-muted-foreground text-lg">Real authors on the waitlist, demanding freedom from Amazon.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 serif-heading">Authors Are Growing Their Audience</h2>
+                    <p className="text-muted-foreground text-lg">Real authors getting guaranteed views and building real fanbases.</p>
                 </div>
             </div>
 

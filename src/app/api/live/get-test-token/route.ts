@@ -1,34 +1,37 @@
 import { AccessToken } from 'livekit-server-sdk'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 
-// Test-only endpoint for admin page - bypasses authentication
-export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url)
-    const roomName = searchParams.get('roomName')
-    const userName = searchParams.get('userName') || 'Test User'
+export async function GET(req: NextRequest) {
+    const roomName = req.nextUrl.searchParams.get('roomName');
+    const role = req.nextUrl.searchParams.get('role') || 'publisher'; // Default to publisher
+    const participantName = `user-${Math.random().toString(36).slice(2, 7)}`;
 
     if (!roomName) {
-        return NextResponse.json({ error: 'Missing roomName' }, { status: 400 })
+        return NextResponse.json({ error: 'Missing roomName' }, { status: 400 });
     }
 
-    // Generate a random identity for testing
-    const identity = `test-user-${Math.random().toString(36).substring(7)}`
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
 
-    const at = new AccessToken(
-        process.env.LIVEKIT_API_KEY,
-        process.env.LIVEKIT_API_SECRET,
-        {
-            identity: identity,
-            name: userName,
-        }
-    )
+    if (!apiKey || !apiSecret) {
+        return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+    }
 
-    at.addGrant({
-        roomJoin: true,
-        room: roomName,
-        canPublish: true, // Allow publishing for testing
-        canSubscribe: true,
-    })
+    try {
+        const at = new AccessToken(apiKey, apiSecret, {
+            identity: participantName,
+        });
 
-    return NextResponse.json({ token: await at.toJwt() })
+        // Set permissions based on role
+        at.addGrant({
+            roomJoin: true,
+            room: roomName,
+            canPublish: role === 'publisher',
+            canSubscribe: true,
+        });
+
+        return NextResponse.json({ token: await at.toJwt() });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to generate token' }, { status: 500 });
+    }
 }

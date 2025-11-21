@@ -2,18 +2,18 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     try {
-        const { topic, bookTitle, authorMessage } = await request.json();
+        const { topic, bookTitle, authorMessage, transcript } = await request.json();
 
-        if (!topic && !bookTitle && !authorMessage) {
+        if (!topic && !bookTitle && !authorMessage && !transcript) {
             return NextResponse.json(
-                { error: 'Need at least one of: topic, bookTitle, or authorMessage' },
+                { error: 'Need at least one of: topic, bookTitle, authorMessage, or transcript' },
                 { status: 400 }
             );
         }
 
         const apiKey = process.env.GEMINI_API_KEY;
         console.log('Gemini API Key exists:', !!apiKey);
-        console.log('Request body:', { topic, bookTitle, authorMessage });
+        console.log('Request body:', { topic, bookTitle, authorMessage, transcript });
 
         if (!apiKey) {
             console.error('GEMINI_API_KEY not found in environment');
@@ -33,7 +33,10 @@ export async function POST(request: Request) {
             context += `The current topic is: ${topic}. `;
         }
         if (authorMessage) {
-            context += `The author just said: "${authorMessage}". `;
+            context += `The author just typed: "${authorMessage}". `;
+        }
+        if (transcript) {
+            context += `The author just said (live transcript): "${transcript}". React specifically to this statement. `;
         }
 
         context += `
@@ -49,11 +52,11 @@ Generate exactly 10 comments that sound like real readers/fans would write. Mix 
 Format as JSON array of objects with: { "name": "realistic name", "message": "comment text" }
 Make names diverse (different cultures, genders). Keep it natural and enthusiastic.`;
 
-        console.log('Calling Gemini API...');
+        console.log('Calling Gemini API (gemini-2.5-flash)...');
 
         // Call Gemini API
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {

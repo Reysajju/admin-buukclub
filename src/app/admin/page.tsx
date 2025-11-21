@@ -3,184 +3,193 @@
 import { useState } from 'react';
 import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
+import { Menu, X, MessageSquare, LogOut, Upload } from 'lucide-react';
 
 export default function AdminPage() {
     const [roomName, setRoomName] = useState('');
+    const [userName, setUserName] = useState('');
+    const [isJoined, setIsJoined] = useState(false);
     const [bookTitle, setBookTitle] = useState('');
-    const [joined, setJoined] = useState(false);
+    const [topic, setTopic] = useState('');
+    const [transcript, setTranscript] = useState('');
+    const [latestComment, setLatestComment] = useState<any>(null);
+    const [isChatOpen, setIsChatOpen] = useState(true);
+    const [manuscriptName, setManuscriptName] = useState('');
 
-    const handleJoinRoom = (e: React.FormEvent) => {
+    const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (roomName.trim()) {
-            setJoined(true);
+        if (roomName.trim() && userName.trim()) {
+            setIsJoined(true);
+            // On mobile, auto-close chat to show video full screen initially
+            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                setIsChatOpen(false);
+            }
         }
     };
 
-    const handleLeaveRoom = () => {
-        setJoined(false);
+    const handleDisconnect = () => {
+        setIsJoined(false);
         setRoomName('');
-        setBookTitle('');
+        setTranscript('');
+        setManuscriptName('');
     };
 
-    if (joined) {
+    const handleNewComment = (comment: any) => {
+        setLatestComment(comment);
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setManuscriptName(file.name);
+        }
+    };
+
+    const handleInvite = () => {
+        const url = `${window.location.origin}/reader?room=${encodeURIComponent(roomName)}`;
+        navigator.clipboard.writeText(url);
+        alert('Invite link copied to clipboard!');
+    };
+
+    if (!isJoined) {
         return (
-            <div className="min-h-screen bg-gray-900">
-                <div className="h-screen flex flex-col">
-                    {/* Header */}
-                    <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                            <h1 className="text-white font-semibold">Room: {roomName}</h1>
-                            {bookTitle && (
-                                <span className="text-gray-400 text-sm">• {bookTitle}</span>
-                            )}
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+                <div className="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-700">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-white mb-2">Admin Studio</h1>
+                        <p className="text-gray-400">Join a room to start streaming</p>
+                    </div>
+
+                    <form onSubmit={handleJoin} className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Your Name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                placeholder="e.g., John Doe"
+                                required
+                            />
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Room Name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={roomName}
+                                onChange={(e) => setRoomName(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                placeholder="e.g., BookClub-1"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Book Title (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={bookTitle}
+                                onChange={(e) => setBookTitle(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                placeholder="e.g., The Great Gatsby"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Upload Manuscript (Optional)
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="file"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                    id="manuscript-upload"
+                                    accept=".pdf,.doc,.docx,.txt"
+                                />
+                                <label
+                                    htmlFor="manuscript-upload"
+                                    className="flex items-center justify-center w-full px-4 py-3 bg-gray-700 border border-dashed border-gray-500 rounded-lg text-gray-300 cursor-pointer hover:bg-gray-600 transition"
+                                >
+                                    <Upload size={18} className="mr-2" />
+                                    {manuscriptName || 'Choose file...'}
+                                </label>
+                            </div>
+                            <p className="text-xs text-yellow-500 mt-2 flex items-start gap-1">
+                                <span>⚠️</span>
+                                <span>Disclaimer: Users can see your book cover/title but cannot download the manuscript file.</span>
+                            </p>
+                        </div>
+
                         <button
-                            onClick={handleLeaveRoom}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                            type="submit"
+                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg transform transition hover:scale-[1.02] mt-2"
                         >
-                            Leave Room
+                            Join Studio
                         </button>
-                    </div>
-
-                    {/* Split Screen: Video + Chat */}
-                    <div className="flex-1 flex overflow-hidden">
-                        {/* Video Section - 70% */}
-                        <div className="flex-[7] overflow-hidden">
-                            <VideoRoom roomName={roomName} onDisconnect={handleLeaveRoom} />
-                        </div>
-
-                        {/* Chat Section - 30% */}
-                        <div className="flex-[3] border-l border-gray-700">
-                            <LiveChat topic={roomName} bookTitle={bookTitle} />
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <div className="max-w-md w-full">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-block p-3 bg-blue-600 rounded-2xl mb-4">
-                        <svg
-                            className="w-12 h-12 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                        </svg>
-                    </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Video Calling Test
-                    </h1>
-                    <p className="text-gray-600">
-                        Test LiveKit video calls with AI-powered audience simulation
-                    </p>
-                </div>
+        <div className="h-screen bg-black flex overflow-hidden relative">
+            {/* Header / Buttons */}
+            <div className="absolute top-4 left-4 z-50 flex gap-3">
+                <button
+                    onClick={handleDisconnect}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600/90 hover:bg-red-700 text-white rounded-lg shadow-lg backdrop-blur-sm transition font-medium text-sm"
+                >
+                    <LogOut size={16} />
+                    Leave
+                </button>
+                <button
+                    onClick={handleInvite}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600/90 hover:bg-blue-700 text-white rounded-lg shadow-lg backdrop-blur-sm transition font-medium text-sm"
+                >
+                    <Upload size={16} className="rotate-90" />
+                    Invite Readers
+                </button>
+            </div>
 
-                {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    <form onSubmit={handleJoinRoom} className="space-y-6">
-                        {/* Room Name Input */}
-                        <div>
-                            <label
-                                htmlFor="roomName"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                                Room Name
-                            </label>
-                            <input
-                                type="text"
-                                id="roomName"
-                                value={roomName}
-                                onChange={(e) => setRoomName(e.target.value)}
-                                placeholder="e.g., test-room-123"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                required
-                            />
-                        </div>
+            {/* Video Area */}
+            <div className={`flex-1 relative transition-all duration-300 h-full ${isChatOpen ? 'mr-0 md:mr-[350px]' : 'mr-0'}`}>
+                <VideoRoom
+                    roomName={roomName}
+                    onDisconnect={handleDisconnect}
+                    // onTranscriptUpdate={setTranscript} // Disabled by default as requested
+                    latestComment={latestComment}
+                />
 
-                        {/* Book Title Input */}
-                        <div>
-                            <label
-                                htmlFor="bookTitle"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                                Book Title (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                id="bookTitle"
-                                value={bookTitle}
-                                onChange={(e) => setBookTitle(e.target.value)}
-                                placeholder="e.g., The Great Gatsby"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                            />
-                            <p className="mt-2 text-sm text-gray-500">
-                                AI will generate contextual comments based on this book
-                            </p>
-                        </div>
+                {/* Toggle Chat Button (Floating) */}
+                <button
+                    onClick={() => setIsChatOpen(!isChatOpen)}
+                    className="absolute top-4 right-4 z-30 p-2 bg-gray-800/80 backdrop-blur text-white rounded-full hover:bg-gray-700 transition shadow-lg border border-white/10"
+                    title={isChatOpen ? "Close Chat" : "Open Chat"}
+                >
+                    {isChatOpen ? <X size={20} /> : <MessageSquare size={20} />}
+                </button>
+            </div>
 
-                        {/* Join Button */}
-                        <button
-                            type="submit"
-                            className="w-full py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition transform hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                            Join Room
-                        </button>
-                    </form>
-
-                    {/* Info Cards */}
-                    <div className="mt-6 space-y-3">
-                        <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                            <svg
-                                className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
-                                <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
-                            </svg>
-                            <div className="text-sm text-purple-900">
-                                <strong>AI Audience:</strong> Send messages and watch AI generate
-                                hundreds of contextual audience responses!
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                            <svg
-                                className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                            <div className="text-sm text-blue-900">
-                                <strong>Tip:</strong> Your browser will ask for camera and microphone
-                                permissions when you join
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <p className="text-center text-sm text-gray-600 mt-6">
-                    Admin Test Page • BuukClub
-                </p>
+            {/* Chat Sidebar */}
+            <div
+                className={`fixed inset-y-0 right-0 w-full md:w-[350px] bg-gray-900 border-l border-gray-800 transform transition-transform duration-300 z-40 ${isChatOpen ? 'translate-x-0' : 'translate-x-full'
+                    }`}
+            >
+                <LiveChat
+                    topic={topic || roomName}
+                    bookTitle={bookTitle}
+                    transcript={transcript}
+                    onNewComment={handleNewComment}
+                />
             </div>
         </div>
     );

@@ -33,11 +33,11 @@ export function ComparisonTable() {
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 {[
-                                    "30-70% Platform Fee",
+                                    "Expensive Ads (No Guarantee)",
                                     "No Customer Emails",
                                     "Passive Reading",
                                     "Algorithm Controls You",
-                                    "Low Ticket ($2.99 - $9.99)"
+                                    "Hoping for Virality"
                                 ].map((item, index) => (
                                     <motion.div
                                         key={index}
@@ -67,15 +67,15 @@ export function ComparisonTable() {
                         <Card className="h-full border-primary/50 bg-card shadow-[0_0_30px_rgba(197,160,89,0.15)] scale-105 relative z-10">
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 pointer-events-none" />
                             <CardHeader>
-                                <CardTitle className="text-primary text-2xl font-serif text-glow">Your Platform</CardTitle>
+                                <CardTitle className="text-primary text-2xl font-serif text-glow">BuukClub Way</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6 relative">
                                 {[
-                                    "70% Revenue Share",
+                                    "Guaranteed Views ($1 = 10 Views)",
                                     "You Own the Data",
                                     "Live Interactive Events",
                                     "Direct-to-Fan Relationship",
-                                    "High Ticket ($20 - $100+)"
+                                    "Predictable Growth"
                                 ].map((item, index) => (
                                     <motion.div
                                         key={index}
