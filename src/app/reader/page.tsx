@@ -1,27 +1,28 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
 import FeedbackSurvey from '@/components/FeedbackSurvey';
 import { MessageSquare, X, LogOut } from 'lucide-react';
 
+interface Comment {
+    id: string;
+    name: string;
+    message: string;
+    avatar: string;
+}
+
 function ReaderContent() {
     const searchParams = useSearchParams();
     const roomParam = searchParams.get('room');
 
-    const [roomName, setRoomName] = useState('');
+    const [roomName, setRoomName] = useState(() => roomParam ?? '');
     const [isJoined, setIsJoined] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(true);
-    const [latestComment, setLatestComment] = useState<any>(null);
+    const [latestComment, setLatestComment] = useState<Comment | null>(null);
     const [showSurvey, setShowSurvey] = useState(false);
-
-    useEffect(() => {
-        if (roomParam) {
-            setRoomName(roomParam);
-        }
-    }, [roomParam]);
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,7 +39,7 @@ function ReaderContent() {
         setShowSurvey(true); // Show survey when leaving
     };
 
-    const handleNewComment = (comment: any) => {
+    const handleNewComment = (comment: Comment) => {
         setLatestComment(comment);
     };
 

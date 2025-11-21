@@ -3,16 +3,22 @@
 import { useState } from 'react';
 import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
-import { Menu, X, MessageSquare, LogOut, Upload } from 'lucide-react';
+import { X, MessageSquare, LogOut, Upload } from 'lucide-react';
+
+interface Comment {
+    id: string;
+    name: string;
+    message: string;
+    avatar: string;
+}
 
 export default function AdminPage() {
     const [roomName, setRoomName] = useState('');
     const [userName, setUserName] = useState('');
     const [isJoined, setIsJoined] = useState(false);
     const [bookTitle, setBookTitle] = useState('');
-    const [topic, setTopic] = useState('');
     const [transcript, setTranscript] = useState('');
-    const [latestComment, setLatestComment] = useState<any>(null);
+    const [latestComment, setLatestComment] = useState<Comment | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(true);
     const [manuscriptName, setManuscriptName] = useState('');
 
@@ -34,7 +40,7 @@ export default function AdminPage() {
         setManuscriptName('');
     };
 
-    const handleNewComment = (comment: any) => {
+    const handleNewComment = (comment: Comment) => {
         setLatestComment(comment);
     };
 
@@ -185,7 +191,7 @@ export default function AdminPage() {
                     }`}
             >
                 <LiveChat
-                    topic={topic || roomName}
+                    topic={roomName}
                     bookTitle={bookTitle}
                     transcript={transcript}
                     onNewComment={handleNewComment}
