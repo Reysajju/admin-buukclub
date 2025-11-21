@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Merriweather } from "next/font/google";
 import "./globals.css";
 import { UserRoleProvider } from "@/contexts/UserRoleContext";
 import { RoleSelectionModal } from "@/components/modals/RoleSelectionModal";
+import DevToolsProtection from "@/components/DevToolsProtection";
 import { Metadata, Viewport } from "next";
 
 const geistSans = Geist({
@@ -106,6 +107,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
         />
         <UserRoleProvider>
+          <DevToolsProtection />
           <RoleSelectionModal />
           {children}
         </UserRoleProvider>

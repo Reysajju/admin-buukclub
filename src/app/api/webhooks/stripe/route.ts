@@ -3,17 +3,35 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+function getStripe() {
+    if (!process.env.STRIPE_SECRET_KEY) {
+        throw new Error('STRIPE_SECRET_KEY is not set');
+    }
+    return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
-// Initialize Supabase Admin Client (Service Role)
-// We need this to bypass RLS when inserting membership from a server-side webhook
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Supabase credentials not set');
+    }
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+}
 
 export async function POST(request: Request) {
+    const stripe = getStripe();
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+        return NextResponse.json(
+            { error: 'Webhook secret not configured' },
+            { status: 500 }
+        );
+    }
+
+    const supabaseAdmin = getSupabaseAdmin();
     const body = await request.text()
     const signature = (await headers()).get('stripe-signature') as string
 
