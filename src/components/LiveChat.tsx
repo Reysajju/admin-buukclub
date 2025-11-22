@@ -11,8 +11,13 @@ interface Comment {
     timestamp: Date;
     avatar: string;
     color: string;
-    isAI?: boolean;
+    isLoyal?: boolean;
 }
+
+type GeneratedComment = {
+    name: string;
+    message: string;
+};
 
 interface LiveChatProps {
     topic?: string;
@@ -68,19 +73,26 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
         setViewerCount((prev) => prev + Math.floor(Math.random() * 40) + 10); // +10 to +50
     };
 
-    // Handle Transcript Updates (AI Context)
+    // Handle Transcript Updates (Loyal Context)
     useEffect(() => {
         if (transcript && transcript !== lastTranscriptRef.current) {
             lastTranscriptRef.current = transcript;
-            // Spike viewers on speech
-            if (Math.random() > 0.7) spikeViewers();
 
-            // Trigger AI comments based on transcript (throttled)
+            const shouldSpike = Math.random() > 0.7;
+            if (shouldSpike) {
+                if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+                    window.requestAnimationFrame(spikeViewers);
+                } else {
+                    setTimeout(spikeViewers, 0);
+                }
+            }
+
+            // Trigger loyal comments based on transcript (throttled)
             // Note: In a real app, we'd debounce this and call the API
         }
     }, [transcript]);
 
-    const generateAIComments = async (userMessage: string) => {
+    const generateLoyalComments = async (userMessage: string) => {
         try {
             const response = await fetch('/api/generate-comments', {
                 method: 'POST',
@@ -96,22 +108,22 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
             if (!response.ok) return;
 
             const data = await response.json();
-            const newComments = data.comments || [];
+            const newComments: GeneratedComment[] = Array.isArray(data.comments) ? data.comments : [];
 
             // Add comments with staggered delay
-            newComments.forEach((comment: any, index: number) => {
+            newComments.forEach((comment, index) => {
                 setTimeout(() => {
-                    const aiComment: Comment = {
+                    const loyalComment: Comment = {
                         id: Math.random().toString(36).substr(2, 9),
                         name: comment.name,
                         message: comment.message,
                         timestamp: new Date(),
                         avatar: comment.name.charAt(0).toUpperCase(),
                         color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
-                        isAI: true,
+                        isLoyal: true,
                     };
-                    setComments((prev) => [...prev, aiComment]);
-                    if (onNewComment) onNewComment(aiComment);
+                    setComments((prev) => [...prev, loyalComment]);
+                    if (onNewComment) onNewComment(loyalComment);
                 }, (index + 1) * (Math.random() * 2000 + 500)); // 0.5s to 2.5s delay per comment
             });
 
@@ -131,7 +143,7 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
             timestamp: new Date(),
             avatar: 'ME',
             color: 'bg-gray-600',
-            isAI: false,
+            isLoyal: false,
         };
 
         setComments((prev) => [...prev, userComment]);
@@ -143,8 +155,8 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
         // Spike viewers on author interaction
         spikeViewers();
 
-        // Generate AI response
-        await generateAIComments(messageToSend);
+        // Generate loyal response
+        await generateLoyalComments(messageToSend);
     };
 
     return (
@@ -182,9 +194,9 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
                                     <span className="text-sm font-medium text-gray-300 truncate">
                                         {comment.name}
                                     </span>
-                                    {comment.isAI && (
+                                    {comment.isLoyal && (
                                         <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1 rounded">
-                                            AI
+                                            Loyal
                                         </span>
                                     )}
                                 </div>

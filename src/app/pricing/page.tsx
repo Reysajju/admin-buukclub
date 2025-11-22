@@ -89,7 +89,7 @@ export default function PricingPage() {
                                         <Check className="h-5 w-5 text-primary" /> <strong>📧 Loyal fans email list</strong>
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <Check className="h-5 w-5 text-primary" /> AI-powered audience
+                                        <Check className="h-5 w-5 text-primary" /> Loyal-powered audience
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <Check className="h-5 w-5 text-primary" /> Analytics dashboard
