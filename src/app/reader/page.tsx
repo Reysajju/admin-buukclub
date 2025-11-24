@@ -23,6 +23,7 @@ function ReaderContent() {
     const [isChatOpen, setIsChatOpen] = useState(true);
     const [latestComment, setLatestComment] = useState<Comment | null>(null);
     const [showSurvey, setShowSurvey] = useState(false);
+    const [hostName, setHostName] = useState('');
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,6 +65,19 @@ function ReaderContent() {
                                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                                 placeholder="Enter room name..."
                                 required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Host / Author Name (optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={hostName}
+                                onChange={(e) => setHostName(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                placeholder="e.g., Casey Quinn"
                             />
                         </div>
 
@@ -127,7 +141,7 @@ function ReaderContent() {
                 isOpen={showSurvey}
                 onClose={() => setShowSurvey(false)}
                 bookTitle={roomName}
-                authorName="The Author"
+                authorName={hostName || "The Author"}
             />
         </div>
     );
