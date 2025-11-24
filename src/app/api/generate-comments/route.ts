@@ -52,11 +52,11 @@ Generate exactly 10 comments that sound like real readers/fans would write. Mix 
 Format as JSON array of objects with: { "name": "realistic name", "message": "comment text" }
 Make names diverse (different cultures, genders). Keep it natural and enthusiastic.`;
 
-        console.log('Calling Gemini API (gemini-2.5-flash)...');
+        console.log('Calling Gemini API (gemini-1.5-flash)...');
 
         // Call Gemini API
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -110,7 +110,7 @@ Make names diverse (different cultures, genders). Keep it natural and enthusiast
                 comments = JSON.parse(generatedText);
             }
             console.log(`Successfully parsed ${comments.length} comments`);
-        } catch (parseError) {
+        } catch {
             console.error('Failed to parse Gemini response:', generatedText);
             // Return fallback comments
             comments = [
@@ -128,10 +128,11 @@ Make names diverse (different cultures, genders). Keep it natural and enthusiast
         }
 
         return NextResponse.json({ comments });
-    } catch (error: any) {
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Internal server error';
         console.error('Error generating comments:', error);
         return NextResponse.json(
-            { error: error.message || 'Internal server error' },
+            { error: errorMessage },
             { status: 500 }
         );
     }

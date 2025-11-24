@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -43,11 +43,65 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
     const [viewerCount, setViewerCount] = useState(150);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const lastTranscriptRef = useRef<string>('');
+    const autoGenerateTriggeredRef = useRef<boolean>(false);
+
+    // Generate loyal comments (memoized to avoid re-declarations)
+    const generateLoyalComments = useCallback(async (userMessage: string = '', isAutomatic: boolean = false) => {
+        try {
+            const response = await fetch('/api/generate-comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    topic: topic || 'General Discussion',
+                    bookTitle: bookTitle || 'Unknown Book',
+                    authorMessage: userMessage || (isAutomatic ? 'Welcome to the book club! Excited to see readers joining.' : ''),
+                    transcript: transcript || ''
+                }),
+            });
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            const newComments: GeneratedComment[] = Array.isArray(data.comments) ? data.comments : [];
+
+            // Add comments with staggered delay
+            newComments.forEach((comment, index) => {
+                setTimeout(() => {
+                    const loyalComment: Comment = {
+                        id: Math.random().toString(36).substr(2, 9),
+                        name: comment.name,
+                        message: comment.message,
+                        timestamp: new Date(),
+                        avatar: comment.name.charAt(0).toUpperCase(),
+                        color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+                        isLoyal: true,
+                    };
+                    setComments((prev) => [...prev, loyalComment]);
+                    if (onNewComment) onNewComment(loyalComment);
+                }, (index + 1) * (Math.random() * 2000 + 500)); // 0.5s to 2.5s delay per comment
+            });
+
+        } catch (error) {
+            console.error('Failed to generate comments:', error);
+        }
+    }, [topic, bookTitle, transcript, onNewComment]);
 
     // Auto-scroll to bottom
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [comments]);
+
+    // Auto-generate comments after 2-3 mins of joining
+    useEffect(() => {
+        if (autoGenerateTriggeredRef.current) return;
+
+        const timer = setTimeout(() => {
+            autoGenerateTriggeredRef.current = true;
+            generateLoyalComments('', true);
+        }, 2000 + Math.random() * 60000); // 2-3 mins random delay
+
+        return () => clearTimeout(timer);
+    }, [generateLoyalComments]);
 
     // Dynamic Viewer Count Logic
     useEffect(() => {
@@ -91,46 +145,6 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment }:
             // Note: In a real app, we'd debounce this and call the API
         }
     }, [transcript]);
-
-    const generateLoyalComments = async (userMessage: string) => {
-        try {
-            const response = await fetch('/api/generate-comments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    topic: topic || 'General Discussion',
-                    bookTitle: bookTitle || 'Unknown Book',
-                    authorMessage: userMessage,
-                    transcript: transcript || ''
-                }),
-            });
-
-            if (!response.ok) return;
-
-            const data = await response.json();
-            const newComments: GeneratedComment[] = Array.isArray(data.comments) ? data.comments : [];
-
-            // Add comments with staggered delay
-            newComments.forEach((comment, index) => {
-                setTimeout(() => {
-                    const loyalComment: Comment = {
-                        id: Math.random().toString(36).substr(2, 9),
-                        name: comment.name,
-                        message: comment.message,
-                        timestamp: new Date(),
-                        avatar: comment.name.charAt(0).toUpperCase(),
-                        color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
-                        isLoyal: true,
-                    };
-                    setComments((prev) => [...prev, loyalComment]);
-                    if (onNewComment) onNewComment(loyalComment);
-                }, (index + 1) * (Math.random() * 2000 + 500)); // 0.5s to 2.5s delay per comment
-            });
-
-        } catch (error) {
-            console.error('Failed to generate comments:', error);
-        }
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
