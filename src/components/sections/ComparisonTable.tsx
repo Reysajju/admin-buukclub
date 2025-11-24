@@ -16,7 +16,7 @@ export function ComparisonTable() {
                     className="text-center mb-12"
                 >
                     <h2 className="text-3xl md:text-5xl font-bold mb-4 serif-heading">The Old Way vs. The New Way</h2>
-                    <p className="text-muted-foreground text-lg">Why the "Best Seller" list is a trap.</p>
+                    <p className="text-muted-foreground text-lg">Building real reader relationships vs. just buying impressions.</p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -29,7 +29,7 @@ export function ComparisonTable() {
                     >
                         <Card className="h-full border-border/50 bg-card/50 opacity-70 hover:opacity-100 transition-all duration-300 hover:shadow-md">
                             <CardHeader>
-                                <CardTitle className="text-muted-foreground text-2xl font-serif">Amazon / Traditional</CardTitle>
+                                <CardTitle className="text-muted-foreground text-2xl font-serif">Traditional Marketing</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 {[
