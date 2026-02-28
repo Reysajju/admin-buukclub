@@ -33,7 +33,8 @@ export default function SignupPage() {
                     data: {
                         full_name: fullName,
                         role: 'author'
-                    }
+                    },
+                    emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`
                 }
             });
 
