@@ -5,7 +5,7 @@ import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
 import { X, MessageSquare, LogOut, Upload, ShieldAlert, Clock } from 'lucide-react';
 import AuthorSessionSurvey from '@/components/AuthorSessionSurvey';
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@/lib/supabase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -35,10 +35,7 @@ export default function AdminPage() {
     const [sessionLimitReached, setSessionLimitReached] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     useEffect(() => {
         checkAuth();

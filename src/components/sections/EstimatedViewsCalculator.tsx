@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { motion, animate } from "framer-motion";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 function Counter({ value }: { value: number }) {
@@ -27,46 +28,44 @@ function Counter({ value }: { value: number }) {
     return <span>{displayValue.toLocaleString()}</span>;
 }
 
-export function EstimatedViewsCalculator() {
-    const [budget, setBudget] = useState(250);
-    const [viewsPerDollar, setViewsPerDollar] = useState(8);
-    const [optInRate, setOptInRate] = useState(2.5);
-    const [liveAttendanceRate, setLiveAttendanceRate] = useState(15);
+const PLANS = {
+    basic: { name: "Basic", readers: 75, sessions: 1, color: "bg-blue-500/10 border-blue-500/20 text-blue-500" },
+    standard: { name: "Standard", readers: 150, sessions: 2, color: "bg-green-500/10 border-green-500/20 text-green-500" },
+    premium: { name: "Premium", readers: 350, sessions: 4, color: "bg-primary/10 border-primary/20 text-primary" },
+    platinum: { name: "Platinum", readers: 750, sessions: 5, color: "bg-purple-500/10 border-purple-500/20 text-purple-500" },
+};
 
-    const estimatedViews = useMemo(() => Math.round(budget * viewsPerDollar), [budget, viewsPerDollar]);
+export function EstimatedViewsCalculator() {
+    const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>('standard');
+    const [optInRate, setOptInRate] = useState(3.5);
+    const [liveAttendanceRate, setLiveAttendanceRate] = useState(20);
+
+    const plan = PLANS[selectedPlan];
+
+    const estimatedMonthlyViews = useMemo(() => plan.readers * plan.sessions * 4.3, [plan]);
     const estimatedEmails = useMemo(
-        () => Math.max(0, Math.round(estimatedViews * (optInRate / 100))),
-        [estimatedViews, optInRate],
+        () => Math.round(estimatedMonthlyViews * (optInRate / 100)),
+        [estimatedMonthlyViews, optInRate],
     );
     const estimatedAttendees = useMemo(
-        () => Math.max(0, Math.round(estimatedEmails * (liveAttendanceRate / 100))),
+        () => Math.round(estimatedEmails * (liveAttendanceRate / 100)),
         [estimatedEmails, liveAttendanceRate],
     );
 
     const sliders = [
         {
-            label: "Views per $",
-            helper: "Typical BuukClub campaign falls between 6-12 views per $",
-            value: viewsPerDollar,
-            onChange: (val: number) => setViewsPerDollar(Math.max(1, Math.min(20, val))),
-            step: 0.5,
-            min: 2,
-            max: 20,
-            suffix: "views",
-        },
-        {
-            label: "Email Opt-In %",
-            helper: "Readers who become loyal fans (avg 2-5%)",
+            label: "Fan Conversion %",
+            helper: "Readers who join your mailing list (avg 2-5%)",
             value: optInRate,
             onChange: (val: number) => setOptInRate(Math.max(0.5, Math.min(25, val))),
-            step: 0.5,
+            step: 0.1,
             min: 0.5,
             max: 25,
             suffix: "%",
         },
         {
-            label: "Live Attendance %",
-            helper: "Subscribers who show up live (10-30%)",
+            label: "Live Event Show-up %",
+            helper: "Subscribers who join your live chat (10-30%)",
             value: liveAttendanceRate,
             onChange: (val: number) => setLiveAttendanceRate(Math.max(5, Math.min(60, val))),
             step: 1,
@@ -78,19 +77,19 @@ export function EstimatedViewsCalculator() {
 
     const milestones = [
         {
-            label: "Estimated Views",
-            value: estimatedViews,
-            description: "Guaranteed readers who spent 30+ sec or 50% scroll",
+            label: "Assigned Monthly Readers",
+            value: estimatedMonthlyViews,
+            description: "Total readers directed to your sessions each month",
         },
         {
-            label: "New Email Subscribers",
+            label: "Mailing List Growth",
             value: estimatedEmails,
-            description: "People who raised their hand to hear from you",
+            description: "Direct fans added to your personal database",
         },
         {
-            label: "Live Event Attendees",
+            label: "Active Live Community",
             value: estimatedAttendees,
-            description: "Readers ready for deeper experiences",
+            description: "Highest intent fans interacting with you live",
         },
     ];
 
@@ -124,58 +123,48 @@ export function EstimatedViewsCalculator() {
                         </CardHeader>
                         <CardContent className="space-y-10">
                             <div className="space-y-6">
-                                <label className="text-sm font-medium flex justify-between items-center">
-                                    <span>Your Campaign Budget</span>
-                                    <motion.span
-                                        key={budget}
-                                        initial={{ scale: 1.1 }}
-                                        animate={{ scale: 1 }}
-                                        className="text-primary font-bold px-3 py-1 bg-primary/10 rounded-full"
-                                    >
-                                        ${budget.toLocaleString()}
-                                    </motion.span>
+                                <label className="text-sm font-medium text-center block uppercase tracking-widest text-muted-foreground">
+                                    Select Your Growth Plan
                                 </label>
-                                <div className="relative pt-2 pb-1">
-                                    <input
-                                        type="range"
-                                        min={50}
-                                        max={5000}
-                                        step={25}
-                                        value={budget}
-                                        onChange={(e) => setBudget(Number(e.target.value))}
-                                        className="slider-enhanced w-full h-3 bg-gradient-to-r from-muted via-primary/20 to-primary/50 rounded-full appearance-none cursor-pointer \
-                                            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 \
-                                            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-primary [&::-webkit-slider-thumb]:to-accent \
-                                            [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-primary/50 [&::-webkit-slider-thumb]:cursor-pointer \
-                                            [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-background [&::-webkit-slider-thumb]:transition-all \
-                                            [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95 \
-                                            [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full \
-                                            [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-primary [&::-moz-range-thumb]:to-accent \
-                                            [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:shadow-primary/50 [&::-moz-range-thumb]:cursor-pointer \
-                                            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-background [&::-moz-range-thumb]:transition-all \
-                                            [&::-moz-range-thumb]:hover:scale-110 [&::-moz-range-thumb]:active:scale-95 [&::-moz-range-thumb]:border-0"
-                                    />
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {(Object.entries(PLANS) as [keyof typeof PLANS, typeof PLANS['basic']][]).map(([key, p]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setSelectedPlan(key)}
+                                            className={cn(
+                                                "p-4 rounded-xl border-2 transition-all text-center flex flex-col gap-1",
+                                                selectedPlan === key
+                                                    ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(197,160,89,0.2)]"
+                                                    : "border-border hover:border-border/80 bg-card"
+                                            )}
+                                        >
+                                            <span className="text-sm font-bold uppercase tracking-tight">{p.name}</span>
+                                            <span className="text-[10px] text-muted-foreground">{p.readers} readers/session</span>
+                                        </button>
+                                    ))}
                                 </div>
-                                <p className="text-xs text-muted-foreground text-center">Drag to match the budget you&apos;re comfortable investing this month.</p>
+                                <p className="text-xs text-muted-foreground text-center">
+                                    Each plan includes a guaranteed <strong>assigned audience</strong> directed to your live sessions.
+                                </p>
                             </div>
 
-                            <div className="grid md:grid-cols-3 gap-6">
+                            <div className="grid md:grid-cols-2 gap-8">
                                 {sliders.map((slider) => (
-                                    <div key={slider.label} className="space-y-2">
+                                    <div key={slider.label} className="space-y-3">
                                         <label className="text-sm font-medium flex items-center justify-between">
                                             <span>{slider.label}</span>
-                                            <span className="text-xs text-muted-foreground">{slider.suffix}</span>
+                                            <span className="text-primary font-bold">{slider.value}{slider.suffix}</span>
                                         </label>
-                                        <Input
-                                            type="number"
-                                            value={slider.value}
-                                            step={slider.step}
+                                        <input
+                                            type="range"
                                             min={slider.min}
                                             max={slider.max}
+                                            step={slider.step}
+                                            value={slider.value}
                                             onChange={(e) => slider.onChange(Number(e.target.value))}
-                                            className="text-lg"
+                                            className="slider-enhanced w-full h-2 bg-muted rounded-full appearance-none cursor-pointer"
                                         />
-                                        <p className="text-xs text-muted-foreground">{slider.helper}</p>
+                                        <p className="text-xs text-muted-foreground italic">{slider.helper}</p>
                                     </div>
                                 ))}
                             </div>
@@ -201,38 +190,41 @@ export function EstimatedViewsCalculator() {
                             </div>
 
                             <div className="bg-muted/30 rounded-xl border border-border/60 p-6 space-y-4">
-                                <p className="font-semibold text-sm uppercase tracking-[0.2em] text-muted-foreground">How we calculate it</p>
-                                <div className="grid gap-4 md:grid-cols-3">
+                                <p className="font-semibold text-sm uppercase tracking-[0.2em] text-muted-foreground text-center">Platform Math</p>
+                                <div className="grid gap-4 md:grid-cols-3 text-center">
                                     <div className="p-4 rounded-lg bg-background/80 border border-border/40">
-                                        <p className="text-xs text-muted-foreground uppercase mb-1">Step 1</p>
-                                        <p className="font-serif">Budget × Views per $</p>
-                                        <p className="text-sm text-muted-foreground mt-2">
-                                            ${budget.toLocaleString()} × {viewsPerDollar.toFixed(1)} = {estimatedViews.toLocaleString()} assigned audience
+                                        <p className="text-[10px] text-muted-foreground uppercase mb-1">Assigned Readers</p>
+                                        <p className="font-serif text-sm">
+                                            {plan.readers} readers × {plan.sessions} session/wk
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground mt-2">
+                                            ≈ {Math.round(plan.readers * plan.sessions * 4.3).toLocaleString()} monthly
                                         </p>
                                     </div>
                                     <div className="p-4 rounded-lg bg-background/80 border border-border/40">
-                                        <p className="text-xs text-muted-foreground uppercase mb-1">Step 2</p>
-                                        <p className="font-serif">Views × Opt-In %</p>
-                                        <p className="text-sm text-muted-foreground mt-2">
-                                            {estimatedViews.toLocaleString()} × {optInRate}% = {estimatedEmails.toLocaleString()} emails captured
+                                        <p className="text-[10px] text-muted-foreground uppercase mb-1">Email Conversion</p>
+                                        <p className="font-serif text-sm">
+                                            Readers × {optInRate}%
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground mt-2">
+                                            {estimatedEmails.toLocaleString()} new fans
                                         </p>
                                     </div>
                                     <div className="p-4 rounded-lg bg-background/80 border border-border/40">
-                                        <p className="text-xs text-muted-foreground uppercase mb-1">Step 3</p>
-                                        <p className="font-serif">Emails × Live Attendance %</p>
-                                        <p className="text-sm text-muted-foreground mt-2">
-                                            {estimatedEmails.toLocaleString()} × {liveAttendanceRate}% = {estimatedAttendees.toLocaleString()} attendees
+                                        <p className="text-[10px] text-muted-foreground uppercase mb-1">Live Engagement</p>
+                                        <p className="font-serif text-sm">
+                                            Emails × {liveAttendanceRate}%
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground mt-2">
+                                            {estimatedAttendees.toLocaleString()} live attendees
                                         </p>
                                     </div>
                                 </div>
-                                <p className="text-xs text-muted-foreground text-center">
-                                    Assumptions are editable so you can plug in your own historical data.
-                                </p>
                             </div>
 
-                            <Link href="/apply" className="block">
+                            <Link href="/signup" className="block">
                                 <Button className="w-full text-lg h-12 shadow-lg hover:shadow-primary/20 transition-all">
-                                    Calculate My Guaranteed Readers
+                                    Create My Author Account
                                 </Button>
                             </Link>
                         </CardContent>

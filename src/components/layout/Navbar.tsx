@@ -5,14 +5,38 @@ import { Button } from "@/components/ui/Button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/contexts/UserRoleContext";
-import { BookOpen, Users, ChevronDown, Menu, X } from "lucide-react";
+import { BookOpen, Users, ChevronDown, Menu, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const { role, setRole } = useUserRole();
     const [showRoleMenu, setShowRoleMenu] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const router = useRouter();
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data } = await supabase.auth.getUser();
+            setUser(data.user);
+        };
+        checkUser();
+
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => authListener.subscription.unsubscribe();
+    }, [supabase]);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/');
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -48,10 +72,10 @@ export function Navbar() {
 
                     {role === 'author' ? (
                         <>
-                            <Link href="/revenue-simulator" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+                            <Link href="/#calculator" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
                                 Revenue Calculator
                             </Link>
-                            <Link href="/apply" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+                            <Link href="/signup" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
                                 Apply Now
                             </Link>
                             <Link href="/faq" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
@@ -60,9 +84,6 @@ export function Navbar() {
                         </>
                     ) : (
                         <>
-                            <Link href="/benefits-calculator" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
-                                Benefits Calculator
-                            </Link>
                             <Link href="/calculator" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
                                 Reading Goals
                             </Link>
@@ -132,11 +153,31 @@ export function Navbar() {
                         </div>
                     )}
 
-                    <Link href="/join">
-                        <Button variant="default" size="sm" className="font-serif">
-                            Join the Club
-                        </Button>
-                    </Link>
+                    {user ? (
+                        <div className="flex items-center gap-3">
+                            <Link href="/admin">
+                                <Button variant="outline" size="sm" className="font-serif">
+                                    Dashboard
+                                </Button>
+                            </Link>
+                            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                                <LogOut className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <Link href="/login">
+                                <Button variant="ghost" size="sm" className="font-serif">
+                                    Login
+                                </Button>
+                            </Link>
+                            <Link href="/join">
+                                <Button variant="default" size="sm" className="font-serif">
+                                    Join the Club
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -161,12 +202,12 @@ export function Navbar() {
                                 <Link href="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
                                 {role === 'author' ? (
                                     <>
-                                        <Link href="/revenue-simulator" onClick={() => setMobileMenuOpen(false)}>Revenue Calculator</Link>
-                                        <Link href="/apply" onClick={() => setMobileMenuOpen(false)}>Apply Now</Link>
+                                        <Link href="/#calculator" onClick={() => setMobileMenuOpen(false)}>Revenue Calculator</Link>
+                                        <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>Apply Now</Link>
                                     </>
                                 ) : (
                                     <>
-                                        <Link href="/benefits-calculator" onClick={() => setMobileMenuOpen(false)}>Benefits Calculator</Link>
+                                        <Link href="/calculator" onClick={() => setMobileMenuOpen(false)}>Reading Goals</Link>
                                         <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
                                     </>
                                 )}
@@ -180,9 +221,16 @@ export function Navbar() {
                                     Switch to {role === 'author' ? 'Reader' : 'Author'} View
                                 </button>
 
-                                <Link href="/join" onClick={() => setMobileMenuOpen(false)}>
-                                    <Button className="w-full mt-4">Join the Club</Button>
-                                </Link>
+                                {user ? (
+                                    <>
+                                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+                                        <button onClick={handleLogout} className="text-left text-destructive">Logout</button>
+                                    </>
+                                ) : (
+                                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                                        <Button className="w-full mt-4">Login / Join</Button>
+                                    </Link>
+                                )}
                             </nav>
                         </motion.div>
                     )}
