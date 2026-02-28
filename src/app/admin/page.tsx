@@ -5,7 +5,7 @@ import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
 import { X, MessageSquare, LogOut, Upload, ShieldAlert, Clock } from 'lucide-react';
 import AuthorSessionSurvey from '@/components/AuthorSessionSurvey';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -35,7 +35,10 @@ export default function AdminPage() {
     const [sessionLimitReached, setSessionLimitReached] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
-    const supabase = createClientComponentClient();
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     useEffect(() => {
         checkAuth();
@@ -56,7 +59,7 @@ export default function AdminPage() {
         // Fetch profile
         const { data: profile } = await supabase
             .from('profiles')
-            .select('is_approved, plan')
+            .select('is_approved, plan, full_name')
             .eq('id', user.id)
             .single();
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/sections/Footer";
@@ -16,9 +16,12 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
-    
+
     const router = useRouter();
-    const supabase = createClientComponentClient();
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,7 +62,7 @@ export default function SignupPage() {
                         <div className="text-5xl mb-6">✉️</div>
                         <h1 className="text-3xl font-bold mb-4">Check your email!</h1>
                         <p className="text-muted-foreground mb-8">
-                            We've sent a verification link to <strong>{email}</strong>. 
+                            We've sent a verification link to <strong>{email}</strong>.
                             Please verify your email, then your account will be reviewed by admin.
                         </p>
                         <Link href="/">
@@ -85,32 +88,32 @@ export default function SignupPage() {
                     <form onSubmit={handleSignup} className="space-y-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Full Name</label>
-                            <Input 
-                                type="text" 
-                                placeholder="J.K. Rowling" 
+                            <Input
+                                type="text"
+                                placeholder="J.K. Rowling"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                required 
+                                required
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Email Address</label>
-                            <Input 
-                                type="email" 
-                                placeholder="author@example.com" 
+                            <Input
+                                type="email"
+                                placeholder="author@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required 
+                                required
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Password</label>
-                            <Input 
-                                type="password" 
-                                placeholder="••••••••" 
+                            <Input
+                                type="password"
+                                placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                required 
+                                required
                             />
                         </div>
 
@@ -120,10 +123,10 @@ export default function SignupPage() {
                             </div>
                         )}
 
-                        <Button 
-                            className="w-full" 
-                            size="lg" 
-                            type="submit" 
+                        <Button
+                            className="w-full"
+                            size="lg"
+                            type="submit"
                             disabled={loading}
                         >
                             {loading ? 'Creating Account...' : 'Sign Up as Author'}
