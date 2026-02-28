@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -39,7 +40,7 @@ export default function PricingPage() {
                                 </div>
                                 <ul className="space-y-3 font-medium">
                                     <li className="flex items-center gap-2">
-                                        <Check className="h-5 w-5 text-primary" /> Host 1 session per month
+                                        <Check className="h-5 w-5 text-primary" /> 1 session per week
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <Check className="h-5 w-5 text-primary" /> BuukClub Assigned Audience
@@ -54,7 +55,7 @@ export default function PricingPage() {
                                         <span>❌ No external fan invites</span>
                                     </li>
                                 </ul>
-                                <Link href="/apply" className="block">
+                                <Link href="/signup" className="block">
                                     <Button variant="outline" className="w-full">
                                         Join Waitlist
                                     </Button>
@@ -80,7 +81,7 @@ export default function PricingPage() {
                                 </div>
                                 <ul className="space-y-3 font-medium">
                                     <li className="flex items-center gap-2">
-                                        <Check className="h-5 w-5 text-primary" /> 4 sessions per month
+                                        <Check className="h-5 w-5 text-primary" /> 2 sessions per week
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <Check className="h-5 w-5 text-primary" /> <strong>Guaranteed reader audience</strong>
@@ -95,7 +96,7 @@ export default function PricingPage() {
                                         <Check className="h-5 w-5 text-primary" /> Standard analytics
                                     </li>
                                 </ul>
-                                <Link href="/apply" className="block">
+                                <Link href="/signup" className="block">
                                     <Button variant="default" className="w-full">
                                         Apply to Join
                                     </Button>
@@ -118,7 +119,7 @@ export default function PricingPage() {
                                 </div>
                                 <ul className="space-y-3 font-medium">
                                     <li className="flex items-center gap-2">
-                                        <Check className="h-5 w-5 text-primary" /> Unlimited sessions
+                                        <Check className="h-5 w-5 text-primary" /> 4 sessions per week
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <Check className="h-5 w-5 text-primary" /> <strong>Maximum audience guarantee</strong>
@@ -143,6 +144,103 @@ export default function PricingPage() {
                                 </Link>
                             </CardContent>
                         </Card>
+
+                        {/* Platinum */}
+                        <Card className="border-primary bg-primary/5 shadow-2xl md:col-span-3 lg:col-span-1">
+                            <CardHeader>
+                                <CardTitle className="text-2xl">Platinum</CardTitle>
+                                <p className="text-muted-foreground">Enterprise Class Scale</p>
+                            </CardHeader>
+                            <CardContent className="space-y-6 text-center">
+                                <div className="text-3xl font-bold">
+                                    Contact for Pricing
+                                </div>
+                                <div className="text-xl font-bold text-primary">
+                                    500+ Assigned Readers
+                                </div>
+                                <ul className="space-y-3 font-medium text-left">
+                                    <li className="flex items-center gap-2">
+                                        <Check className="h-5 w-5 text-primary" /> 5 sessions per week
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <Check className="h-5 w-5 text-primary" /> Dedicated Account Manager
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <Check className="h-5 w-5 text-primary" /> Custom Marketing Campaigns
+                                    </li>
+                                </ul>
+                                <Button
+                                    onClick={() => document.getElementById('platinum-form')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="w-full bg-primary hover:bg-primary/90"
+                                >
+                                    Inquire Now
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Platinum Contact Form */}
+                    <div id="platinum-form" className="mt-20 max-w-2xl mx-auto bg-card border border-border rounded-2xl p-8 shadow-xl">
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold">Platinum Inquiry</h2>
+                            <p className="text-muted-foreground mt-2">Scale your community with high-volume sessions.</p>
+                        </div>
+                        <form
+                            onSubmit={async (e) => {
+                                e.preventDefault();
+                                const target = e.target as any;
+                                const data = {
+                                    name: target.name.value,
+                                    email: target.email.value,
+                                    phone: target.phone.value,
+                                    bookName: target.bookName.value,
+                                    sessionCount: target.sessionCount.value,
+                                    message: target.message.value
+                                };
+                                const resp = await fetch('/api/leads', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(data)
+                                });
+                                if (resp.ok) {
+                                    alert('Inquiry submitted! We will contact you soon.');
+                                    target.reset();
+                                } else {
+                                    alert('Error submitting inquiry.');
+                                }
+                            }}
+                            className="space-y-4"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Full Name</label>
+                                    <Input name="name" placeholder="John Doe" required />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Email</label>
+                                    <Input name="email" type="email" placeholder="john@example.com" required />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Phone Number</label>
+                                    <Input name="phone" placeholder="+1 (555) 000-0000" required />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Book Name</label>
+                                    <Input name="bookName" placeholder="Title of your book" required />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Target Sessions per Week</label>
+                                <Input name="sessionCount" type="number" placeholder="5" required />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Additional Details</label>
+                                <textarea name="message" className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Tell us about your needs..." />
+                            </div>
+                            <Button type="submit" className="w-full" size="lg">Submit Inquiry</Button>
+                        </form>
                     </div>
 
                     {/* Info Section */}

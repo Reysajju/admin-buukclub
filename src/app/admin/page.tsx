@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
-import { X, MessageSquare, LogOut, Upload } from 'lucide-react';
+import { X, MessageSquare, LogOut, Upload, ShieldAlert, Clock } from 'lucide-react';
 import AuthorSessionSurvey from '@/components/AuthorSessionSurvey';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
 
 interface Comment {
     id: string;
@@ -25,6 +28,72 @@ export default function AdminPage() {
     const [showSurvey, setShowSurvey] = useState(false);
     const [lastSessionName, setLastSessionName] = useState('');
     const [lastAuthorName, setLastAuthorName] = useState('');
+
+    const [loading, setLoading] = useState(true);
+    const [isApproved, setIsApproved] = useState<boolean | null>(null);
+    const [userPlan, setUserPlan] = useState('basic');
+    const [sessionLimitReached, setSessionLimitReached] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    const supabase = createClientComponentClient();
+
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    const checkAuth = async () => {
+        setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            window.location.href = '/login';
+            return;
+        }
+
+        setUserId(user.id);
+        setUserName(user.user_metadata?.full_name || 'Author');
+
+        // Fetch profile
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_approved, plan')
+            .eq('id', user.id)
+            .single();
+
+        if (profile) {
+            setIsApproved(profile.is_approved);
+            setUserPlan(profile.plan || 'basic');
+
+            // Allow super admin to skip approval check for themselves? No, follow logic.
+            // Check session limits (per week)
+            if (profile.is_approved) {
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+                const { count } = await supabase
+                    .from('live_chat_messages') // Leveraging this table to count sessions (room_name distinct created_at)
+                    .select('room_name', { count: 'exact', head: true })
+                    .eq('name', profile.full_name || 'Author')
+                    .gte('created_at', oneWeekAgo.toISOString());
+
+                // Plan limits: Basic: 1, Standard: 2, Premium: 4, Platinum: 5
+                const limits: Record<string, number> = {
+                    'basic': 1,
+                    'standard': 2,
+                    'premium': 4,
+                    'platinum': 5
+                };
+
+                if ((count || 0) >= (limits[profile.plan] || 1)) {
+                    // setSessionLimitReached(true); // Temporarily disabling hard block to avoid locking out during dev
+                    console.log("Weekly session limit reached for plan:", profile.plan);
+                }
+            }
+        } else {
+            setIsApproved(false);
+        }
+        setLoading(false);
+    };
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,6 +132,71 @@ export default function AdminPage() {
         navigator.clipboard.writeText(url);
         alert('Invite link copied to clipboard!');
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+        );
+    }
+
+    if (isApproved === false) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+                <div className="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-700 text-center">
+                    <div className="mb-6 flex justify-center">
+                        <div className="bg-orange-500/20 p-4 rounded-full">
+                            <Clock className="h-10 w-10 text-orange-500" />
+                        </div>
+                    </div>
+                    <h1 className="text-3xl font-bold text-white mb-4">Approval Pending</h1>
+                    <p className="text-gray-400 mb-8">
+                        Thank you for joining BuukClub! Your author account is currently being reviewed.
+                        We typically approve new authors within 24-48 hours.
+                    </p>
+                    <div className="space-y-3">
+                        <Link href="/">
+                            <Button variant="outline" className="w-full">Back to Home</Button>
+                        </Link>
+                        <button
+                            onClick={() => supabase.auth.signOut().then(() => window.location.href = '/')}
+                            className="text-sm text-gray-500 hover:text-white transition underline"
+                        >
+                            Log Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (sessionLimitReached) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+                <div className="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full border border-red-500/50 text-center">
+                    <div className="mb-6 flex justify-center">
+                        <div className="bg-red-500/20 p-4 rounded-full">
+                            <ShieldAlert className="h-10 w-10 text-red-500" />
+                        </div>
+                    </div>
+                    <h1 className="text-3xl font-bold text-white mb-4">Limit Reached</h1>
+                    <p className="text-gray-400 mb-8">
+                        You've reached your weekly session limit for the <strong className="text-white uppercase">{userPlan}</strong> plan.
+                        Upgrade your plan to host more sessions.
+                    </p>
+                    <div className="space-y-3">
+                        <Link href="/pricing">
+                            <Button className="w-full bg-primary hover:bg-primary/90">Upgrade Plan</Button>
+                        </Link>
+                        <Link href="/">
+                            <Button variant="outline" className="w-full">Back to Home</Button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!isJoined) {
         return (

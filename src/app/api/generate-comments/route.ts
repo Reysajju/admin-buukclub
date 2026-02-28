@@ -49,33 +49,52 @@ Context for this session:
 
 Output format: JSON array of 3-5 objects: { "name": "Name", "message": "Comment Text" }`;
 
-        const response = await fetch(
-            'https://api.z.ai/api/paas/v4/chat/completions',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: 'glm-4.7-flash',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: "Generate the next wave of natural audience comments." }
-                    ],
-                    temperature: 0.85,
-                    top_p: 0.9,
-                }),
-            }
-        );
+        // Model fallback list: Premium variants first, then flash/air
+        const models = ['glm-4-plus', 'glm-4-0520', 'glm-4.7-flash', 'glm-4-air', 'glm-4-flash'];
+        let lastError = null;
+        let data = null;
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('GLM API error:', errorText);
-            throw new Error('GLM API request failed');
+        for (const model of models) {
+            try {
+                const response = await fetch(
+                    'https://api.z.ai/api/paas/v4/chat/completions',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`,
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: 'system', content: systemPrompt },
+                                { role: 'user', content: "Generate the next wave of natural audience comments." }
+                            ],
+                            temperature: 0.85,
+                            top_p: 0.9,
+                        }),
+                    }
+                );
+
+                if (response.ok) {
+                    data = await response.json();
+                    console.log(`✅ GLM success with model: ${model}`);
+                    break;
+                } else {
+                    const errorText = await response.text();
+                    console.warn(`⚠️ GLM model ${model} failed:`, errorText);
+                    lastError = errorText;
+                }
+            } catch (err: any) {
+                console.error(`💥 GLM model ${model} exception:`, err.message);
+                lastError = err.message;
+            }
         }
 
-        const data = await response.json();
+        if (!data) {
+            throw new Error(`All GLM models failed. Last error: ${lastError}`);
+        }
+
         const content = data.choices[0]?.message?.content || '';
 
         // Extract JSON from response
