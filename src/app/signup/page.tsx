@@ -45,7 +45,12 @@ export default function SignupPage() {
             // But let's ensure the user knows they are pending.
             setSuccess(true);
         } catch (err: any) {
-            setError(err.message);
+            console.error('Signup error details:', err);
+            if (err.message === 'Failed to fetch') {
+                setError('Network error: Failed to reach the authentication server. Please check your internet connection, try disabling ad-blockers, or ensure the Supabase URL is correct in your Vercel settings.');
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }
