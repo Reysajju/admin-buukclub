@@ -60,8 +60,8 @@ export default function SignupPage() {
                         <div className="text-5xl mb-6">✉️</div>
                         <h1 className="text-3xl font-bold mb-4">Check your email!</h1>
                         <p className="text-muted-foreground mb-8">
-                            We've sent a verification link to <strong>{email}</strong>.
-                            Please verify your email, then your account will be reviewed by admin.
+                            We&apos;ve sent a verification link to <strong>{email}</strong>.
+                            Click the link to verify your email and you&apos;re all set!
                         </p>
                         <Link href="/">
                             <Button className="w-full">Back to Home</Button>

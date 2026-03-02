@@ -183,7 +183,7 @@ $$;
 -- 11. AUTO-PROFILE TRIGGER (ROBUST)
 -- When a new user signs up via Supabase Auth:
 --   a) Create their profile row (idempotent with ON CONFLICT)
---   b) If role = 'author', also create an approval_request
+--   b) Auto-approved — no admin review needed
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
@@ -195,13 +195,14 @@ BEGIN
     user_name := COALESCE(new.raw_user_meta_data->>'full_name', '');
 
     -- Insert profile (idempotent: if user already exists, update instead)
+    -- All users are auto-approved
     INSERT INTO public.profiles (id, full_name, email, role, is_approved, plan, session_limit)
     VALUES (
         new.id,
         user_name,
         new.email,
         user_role,
-        CASE WHEN user_role = 'author' THEN FALSE ELSE TRUE END,
+        TRUE,
         'basic',
         0
     )
@@ -209,18 +210,6 @@ BEGIN
         full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
         email = COALESCE(EXCLUDED.email, public.profiles.email),
         updated_at = NOW();
-
-    -- If author, create an approval request for the superadmin
-    IF user_role = 'author' THEN
-        INSERT INTO public.approval_requests (user_id, full_name, email, status)
-        VALUES (
-            new.id,
-            COALESCE(user_name, 'Unknown'),
-            new.email,
-            'pending'
-        )
-        ON CONFLICT DO NOTHING;
-    END IF;
 
     RETURN new;
 END;
