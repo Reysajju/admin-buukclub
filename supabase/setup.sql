@@ -140,9 +140,15 @@ CREATE TABLE IF NOT EXISTS public.session_requests (
 );
 
 -- ============================================================
--- 10. Enable Realtime for Chat
+-- 10. Enable Realtime for Chat (safe to re-run)
 -- ============================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE live_chat_messages;
+DO $$
+BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE live_chat_messages;
+EXCEPTION WHEN duplicate_object THEN
+    -- already added, ignore
+END;
+$$;
 
 -- ============================================================
 -- 11. AUTO-PROFILE TRIGGER (ROBUST)
