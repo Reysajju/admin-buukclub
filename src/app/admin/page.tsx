@@ -27,6 +27,16 @@ interface ProfileData {
     created_at: string;
 }
 
+interface SessionRequest {
+    id: string;
+    book_title: string;
+    preferred_date: string;
+    message: string;
+    status: 'pending' | 'approved' | 'rejected';
+    room_link: string | null;
+    created_at: string;
+}
+
 export default function AdminPage() {
     const [roomName, setRoomName] = useState('');
     const [userName, setUserName] = useState('');
@@ -47,10 +57,12 @@ export default function AdminPage() {
     const [userId, setUserId] = useState<string | null>(null);
 
     // Dashboard state
-    const [dashboardView, setDashboardView] = useState<'dashboard' | 'studio' | 'profile'>('dashboard');
+    const [dashboardView, setDashboardView] = useState<'dashboard' | 'request-session' | 'profile'>('dashboard');
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [editingProfile, setEditingProfile] = useState(false);
     const [profileForm, setProfileForm] = useState({ full_name: '', bio: '', book_name: '' });
+    const [sessionRequests, setSessionRequests] = useState<SessionRequest[]>([]);
+    const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
 
     const supabase = createClient();
 
@@ -86,6 +98,14 @@ export default function AdminPage() {
                 bio: profileData.bio || '',
                 book_name: profileData.book_name || '',
             });
+
+            // Fetch session requests
+            const { data: requests } = await supabase
+                .from('session_requests')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            setSessionRequests(requests || []);
 
             if (profileData.is_approved) {
                 const oneWeekAgo = new Date();
@@ -133,14 +153,35 @@ export default function AdminPage() {
         }
     };
 
-    const handleJoin = (e: React.FormEvent) => {
+    const handleRequestSession = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (roomName.trim() && userName.trim()) {
-            setIsJoined(true);
-            if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                setIsChatOpen(false);
-            }
+        if (!userId || !profile) return;
+
+        setIsSubmittingRequest(true);
+        const { data, error } = await supabase
+            .from('session_requests')
+            .insert({
+                author_id: userId,
+                author_name: profile.full_name,
+                author_email: profile.email,
+                book_title: bookTitle,
+                preferred_date: roomName, // Using roomName state as preferred date for simplicity or adding new state
+                message: manuscriptName // Using manuscriptName as a placeholder for additional message if any
+            })
+            .select()
+            .single();
+
+        if (!error && data) {
+            setSessionRequests([data, ...sessionRequests]);
+            setDashboardView('dashboard');
+            setBookTitle('');
+            setRoomName('');
+            setManuscriptName('');
+            alert('Session request submitted! SuperAdmin will review and provide a room link.');
+        } else {
+            alert('Failed to submit request: ' + (error?.message || 'Unknown error'));
         }
+        setIsSubmittingRequest(false);
     };
 
     const handleDisconnect = () => {
@@ -455,12 +496,12 @@ export default function AdminPage() {
                             {/* Quick Actions */}
                             <div className="grid md:grid-cols-3 gap-6 mb-10">
                                 <button
-                                    onClick={() => setDashboardView('studio')}
+                                    onClick={() => setDashboardView('request-session')}
                                     className="bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 p-6 rounded-2xl text-left transition transform hover:scale-[1.02] shadow-lg"
                                 >
                                     <BookOpen className="h-8 w-8 text-white mb-3" />
-                                    <h3 className="text-lg font-bold text-white">Create BookClub Session</h3>
-                                    <p className="text-blue-200 text-sm mt-1">Start a live reading session with your audience</p>
+                                    <h3 className="text-lg font-bold text-white">Request Session</h3>
+                                    <p className="text-blue-200 text-sm mt-1">Submit a request to SuperAdmin for a live session</p>
                                 </button>
 
                                 <button
@@ -484,6 +525,49 @@ export default function AdminPage() {
                                     <h3 className="text-lg font-bold text-white">My Profile</h3>
                                     <p className="text-gray-400 text-sm mt-1">Update your author details and bio</p>
                                 </button>
+                            </div>
+
+                            {/* Session Requests List */}
+                            <div className="mb-10">
+                                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <Clock className="h-5 w-5 text-blue-400" />
+                                    Your Session Requests
+                                </h3>
+                                {sessionRequests.length === 0 ? (
+                                    <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-8 text-center">
+                                        <p className="text-gray-400">You haven&apos;t requested any sessions yet.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {sessionRequests.map((req) => (
+                                            <div key={req.id} className="bg-gray-800 border border-gray-700 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                                <div>
+                                                    <h4 className="text-white font-bold">{req.book_title || 'Untitled Session'}</h4>
+                                                    <p className="text-gray-400 text-xs mt-1">Requested on {new Date(req.created_at).toLocaleDateString()}</p>
+                                                    {req.preferred_date && <p className="text-gray-500 text-xs">Preferred: {req.preferred_date}</p>}
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <span className={`text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-wider ${req.status === 'approved' ? 'bg-green-500 text-white' :
+                                                            req.status === 'rejected' ? 'bg-red-500 text-white' :
+                                                                'bg-orange-500 text-white'
+                                                        }`}>
+                                                        {req.status}
+                                                    </span>
+                                                    {req.status === 'approved' && req.room_link && (
+                                                        <a
+                                                            href={req.room_link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition"
+                                                        >
+                                                            Join Live Studio
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Plan Info */}
@@ -520,8 +604,8 @@ export default function AdminPage() {
                         </div>
                     )}
 
-                    {/* ========== STUDIO JOIN FORM (inline view) ========== */}
-                    {dashboardView === 'studio' && (
+                    {/* ========== SESSION REQUEST FORM ========== */}
+                    {dashboardView === 'request-session' && (
                         <div className="max-w-md mx-auto mt-0">
                             <button
                                 onClick={() => setDashboardView('dashboard')}
@@ -532,42 +616,14 @@ export default function AdminPage() {
 
                             <div className="bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700">
                                 <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-white mb-2">Create Session</h1>
-                                    <p className="text-gray-400">Set up your live BookClub room</p>
+                                    <h1 className="text-3xl font-bold text-white mb-2">Request Session</h1>
+                                    <p className="text-gray-400">Submit details for your next live session</p>
                                 </div>
 
-                                <form onSubmit={handleJoin} className="space-y-5">
+                                <form onSubmit={handleRequestSession} className="space-y-5">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Your Name <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={userName}
-                                            onChange={(e) => setUserName(e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                            placeholder="e.g., John Doe"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Room Name <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={roomName}
-                                            onChange={(e) => setRoomName(e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                            placeholder="e.g., BookClub-1"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Book Title (Optional)
+                                            Book Title <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -575,40 +631,43 @@ export default function AdminPage() {
                                             onChange={(e) => setBookTitle(e.target.value)}
                                             className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                                             placeholder="e.g., The Great Gatsby"
+                                            required
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Upload Manuscript (Optional)
+                                            Preferred Date/Time <span className="text-red-500">*</span>
                                         </label>
-                                        <div className="relative">
-                                            <input
-                                                type="file"
-                                                onChange={handleFileUpload}
-                                                className="hidden"
-                                                id="manuscript-upload"
-                                                accept=".pdf,.doc,.docx,.txt"
-                                            />
-                                            <label
-                                                htmlFor="manuscript-upload"
-                                                className="flex items-center justify-center w-full px-4 py-3 bg-gray-700 border border-dashed border-gray-500 rounded-lg text-gray-300 cursor-pointer hover:bg-gray-600 transition"
-                                            >
-                                                <Upload size={18} className="mr-2" />
-                                                {manuscriptName || 'Choose file...'}
-                                            </label>
-                                        </div>
-                                        <p className="text-xs text-yellow-500 mt-2 flex items-start gap-1">
-                                            <span>⚠️</span>
-                                            <span>Disclaimer: Users can see your book cover/title but cannot download the manuscript file.</span>
-                                        </p>
+                                        <input
+                                            type="text"
+                                            value={roomName}
+                                            onChange={(e) => setRoomName(e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                            placeholder="e.g., Friday 6 PM EST"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Additional Notes (Optional)
+                                        </label>
+                                        <textarea
+                                            value={manuscriptName}
+                                            onChange={(e) => setManuscriptName(e.target.value)}
+                                            rows={3}
+                                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                            placeholder="Any special requirements..."
+                                        />
                                     </div>
 
                                     <button
                                         type="submit"
-                                        className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg transform transition hover:scale-[1.02] mt-2"
+                                        disabled={isSubmittingRequest}
+                                        className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg transform transition hover:scale-[1.02] mt-2 disabled:opacity-50"
                                     >
-                                        Start Session
+                                        {isSubmittingRequest ? 'Submitting...' : 'Submit Request'}
                                     </button>
                                 </form>
                             </div>

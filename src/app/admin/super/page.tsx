@@ -40,13 +40,28 @@ interface Application {
     created_at: string;
 }
 
+interface SessionRequest {
+    id: string;
+    author_id: string;
+    author_name: string;
+    author_email: string;
+    book_title: string;
+    preferred_date: string;
+    message: string;
+    status: string;
+    room_link: string | null;
+    created_at: string;
+}
+
 export default function SuperAdminPortal() {
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>([]);
     const [applications, setApplications] = useState<Application[]>([]);
+    const [sessionRequests, setSessionRequests] = useState<SessionRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [activeTab, setActiveTab] = useState<'pending' | 'authors' | 'applications'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'authors' | 'sessions' | 'applications'>('pending');
+    const [approveLink, setApproveLink] = useState<{ [key: string]: string }>({});
 
     const router = useRouter();
     const supabase = createClient();
@@ -95,6 +110,14 @@ export default function SuperAdminPortal() {
                 .order('created_at', { ascending: false });
 
             setApplications(appData || []);
+
+            // Fetch session requests
+            const { data: sessionData } = await supabase
+                .from('session_requests')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            setSessionRequests(sessionData || []);
         } catch (error) {
             console.error("Fetch error:", error);
         } finally {
@@ -134,6 +157,46 @@ export default function SuperAdminPortal() {
             .eq('id', request.id);
 
         fetchAllData();
+    };
+
+    const handleApproveSession = async (request: SessionRequest) => {
+        const link = approveLink[request.id];
+        if (!link) {
+            alert("Please provide a room link for the session.");
+            return;
+        }
+
+        const { error } = await supabase
+            .from('session_requests')
+            .update({
+                status: 'approved',
+                room_link: link,
+                reviewed_at: new Date().toISOString()
+            })
+            .eq('id', request.id);
+
+        if (!error) {
+            fetchAllData();
+            setApproveLink(prev => {
+                const updated = { ...prev };
+                delete updated[request.id];
+                return updated;
+            });
+        }
+    };
+
+    const handleRejectSession = async (id: string) => {
+        const { error } = await supabase
+            .from('session_requests')
+            .update({
+                status: 'rejected',
+                reviewed_at: new Date().toISOString()
+            })
+            .eq('id', id);
+
+        if (!error) {
+            fetchAllData();
+        }
     };
 
     const handleToggleApproval = async (id: string, currentStatus: boolean) => {
@@ -195,6 +258,13 @@ export default function SuperAdminPortal() {
                     >
                         <Users className="h-4 w-4" />
                         All Authors ({profiles.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('sessions')}
+                        className={`pb-3 px-4 font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'sessions' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <Clock className="h-4 w-4" />
+                        Session Requests ({sessionRequests.filter(r => r.status === 'pending').length})
                     </button>
                     <button
                         onClick={() => setActiveTab('applications')}
@@ -327,6 +397,81 @@ export default function SuperAdminPortal() {
                                                         </>
                                                     )}
                                                 </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )
+                    ) : activeTab === 'sessions' ? (
+                        /* ========== SESSION REQUESTS TAB ========== */
+                        sessionRequests.length === 0 ? (
+                            <div className="text-center py-20 bg-card rounded-xl border border-border">
+                                No session requests found.
+                            </div>
+                        ) : (
+                            <div className="grid gap-4">
+                                {sessionRequests.map((req) => (
+                                    <Card key={req.id} className={req.status === 'pending' ? 'border-blue-500/30 bg-blue-500/5' : ''}>
+                                        <CardContent className="p-6">
+                                            <div className="flex flex-col md:flex-row justify-between gap-6">
+                                                <div className="flex-1 space-y-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <h3 className="font-bold text-xl">{req.author_name}</h3>
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${req.status === 'approved' ? 'bg-green-500 text-white' :
+                                                                req.status === 'rejected' ? 'bg-red-500 text-white' :
+                                                                    'bg-orange-500 text-white'
+                                                            }`}>
+                                                            {req.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-primary font-medium text-sm">{req.author_email}</p>
+
+                                                    <div className="grid md:grid-cols-2 gap-4 text-sm mt-4">
+                                                        <div className="bg-muted/50 p-3 rounded-lg">
+                                                            <p className="text-[10px] uppercase text-muted-foreground mb-1">Book Title</p>
+                                                            <p className="font-bold">{req.book_title || 'N/A'}</p>
+                                                        </div>
+                                                        <div className="bg-muted/50 p-3 rounded-lg">
+                                                            <p className="text-[10px] uppercase text-muted-foreground mb-1">Preferred Date/Time</p>
+                                                            <p className="font-bold">{req.preferred_date}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {req.message && (
+                                                        <div className="bg-muted/50 p-3 rounded-lg text-sm mt-3">
+                                                            <p className="text-[10px] uppercase text-muted-foreground mb-1">Author Note</p>
+                                                            <p className="italic">{req.message}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {req.room_link && (
+                                                        <div className="bg-green-500/10 border border-green-500/20 p-3 rounded-lg text-sm mt-3">
+                                                            <p className="text-[10px] uppercase text-green-600 font-bold mb-1">Provided Link</p>
+                                                            <p className="truncate text-green-700">{req.room_link}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {req.status === 'pending' && (
+                                                    <div className="flex flex-col gap-3 justify-center min-w-[250px]">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Enter LiveKit/Room Link..."
+                                                            value={approveLink[req.id] || ''}
+                                                            onChange={(e) => setApproveLink({ ...approveLink, [req.id]: e.target.value })}
+                                                            className="px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => handleApproveSession(req)}>
+                                                                Approve & Send
+                                                            </Button>
+                                                            <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10 border-destructive/20" onClick={() => handleRejectSession(req.id)}>
+                                                                Reject
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </CardContent>
                                     </Card>

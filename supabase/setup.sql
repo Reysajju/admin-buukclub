@@ -47,6 +47,9 @@ CREATE TABLE IF NOT EXISTS public.waitlist (
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     role TEXT DEFAULT 'reader',
+    favorite_genre TEXT,
+    books_per_year TEXT,
+    ticket_code TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -116,7 +119,26 @@ CREATE TABLE IF NOT EXISTS public.leads (
 );
 
 -- ============================================================
--- 9. Enable Realtime for Chat
+-- 9. SESSION_REQUESTS TABLE
+-- Authors request sessions, superadmin approves and provides the live link
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.session_requests (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    author_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    author_name TEXT NOT NULL,
+    author_email TEXT NOT NULL,
+    book_title TEXT,
+    preferred_date TEXT,
+    message TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    room_link TEXT,
+    admin_notes TEXT,
+    reviewed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+-- 10. Enable Realtime for Chat
 -- ============================================================
 ALTER PUBLICATION supabase_realtime ADD TABLE live_chat_messages;
 
@@ -267,7 +289,38 @@ CREATE POLICY "applications_update_superadmin"
     USING (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com')
     WITH CHECK (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com');
 
+-- -------------------------------------------------------
+-- SESSION_REQUESTS policies
+-- -------------------------------------------------------
+ALTER TABLE public.session_requests ENABLE ROW LEVEL SECURITY;
+
+-- Authors can submit session requests
+CREATE POLICY "session_requests_insert_author"
+    ON public.session_requests FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = author_id);
+
+-- Authors can view their own requests
+CREATE POLICY "session_requests_select_own"
+    ON public.session_requests FOR SELECT
+    TO authenticated
+    USING (auth.uid() = author_id);
+
+-- Superadmin can view all session requests
+CREATE POLICY "session_requests_select_superadmin"
+    ON public.session_requests FOR SELECT
+    TO authenticated
+    USING (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com');
+
+-- Superadmin can update session requests (approve, add link, notes)
+CREATE POLICY "session_requests_update_superadmin"
+    ON public.session_requests FOR UPDATE
+    TO authenticated
+    USING (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com')
+    WITH CHECK (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com');
+
 -- ============================================================
--- 12. ADMIN SETUP (run manually after superadmin signs up)
+-- 13. ADMIN SETUP (run manually after superadmin signs up)
 -- ============================================================
 -- UPDATE public.profiles SET is_approved = true, role = 'author' WHERE email = 'sajjadr742@gmail.com';
+
