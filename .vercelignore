@@ -1,0 +1,4 @@
+supabase/
+*.sql
+.env
+.env.*
