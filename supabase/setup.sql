@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     role TEXT CHECK (role IN ('author', 'reader')) DEFAULT 'reader',
     is_approved BOOLEAN DEFAULT FALSE,
     plan TEXT DEFAULT 'basic',
+    session_limit INTEGER DEFAULT 0,
     phone TEXT,
     book_name TEXT,
     avatar_url TEXT,
@@ -121,6 +122,7 @@ CREATE TABLE IF NOT EXISTS public.leads (
 -- ============================================================
 -- 9. SESSION_REQUESTS TABLE
 -- Authors request sessions, superadmin approves and provides the live link
+-- SuperAdmin can also proactively create sessions for any author
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.session_requests (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -143,9 +145,9 @@ CREATE TABLE IF NOT EXISTS public.session_requests (
 ALTER PUBLICATION supabase_realtime ADD TABLE live_chat_messages;
 
 -- ============================================================
--- 10. AUTO-PROFILE TRIGGER
+-- 11. AUTO-PROFILE TRIGGER (ROBUST)
 -- When a new user signs up via Supabase Auth:
---   a) Create their profile row
+--   a) Create their profile row (idempotent with ON CONFLICT)
 --   b) If role = 'author', also create an approval_request
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -155,18 +157,23 @@ DECLARE
     user_name TEXT;
 BEGIN
     user_role := COALESCE(new.raw_user_meta_data->>'role', 'reader');
-    user_name := new.raw_user_meta_data->>'full_name';
+    user_name := COALESCE(new.raw_user_meta_data->>'full_name', '');
 
-    -- Insert profile
-    INSERT INTO public.profiles (id, full_name, email, role, is_approved, plan)
+    -- Insert profile (idempotent: if user already exists, update instead)
+    INSERT INTO public.profiles (id, full_name, email, role, is_approved, plan, session_limit)
     VALUES (
         new.id,
         user_name,
         new.email,
         user_role,
         CASE WHEN user_role = 'author' THEN FALSE ELSE TRUE END,
-        'basic'
-    );
+        'basic',
+        0
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
+        email = COALESCE(EXCLUDED.email, public.profiles.email),
+        updated_at = NOW();
 
     -- If author, create an approval request for the superadmin
     IF user_role = 'author' THEN
@@ -176,7 +183,8 @@ BEGIN
             COALESCE(user_name, 'Unknown'),
             new.email,
             'pending'
-        );
+        )
+        ON CONFLICT DO NOTHING;
     END IF;
 
     RETURN new;
@@ -190,13 +198,14 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- ============================================================
--- 11. ROW LEVEL SECURITY (RLS)
+-- 12. ROW LEVEL SECURITY (RLS)
 -- ============================================================
 
 -- Enable RLS on all key tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.approval_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.session_requests ENABLE ROW LEVEL SECURITY;
 
 -- -------------------------------------------------------
 -- Drop ALL existing policies to avoid conflicts
@@ -207,6 +216,24 @@ DROP POLICY IF EXISTS "Super Admin can do everything on profiles" ON public.prof
 DROP POLICY IF EXISTS "Anyone can submit an application" ON public.applications;
 DROP POLICY IF EXISTS "Super Admin can view all applications" ON public.applications;
 DROP POLICY IF EXISTS "Super Admin can update applications" ON public.applications;
+DROP POLICY IF EXISTS "profiles_select_public" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_superadmin" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_delete_superadmin" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_service" ON public.profiles;
+DROP POLICY IF EXISTS "approval_requests_select_superadmin" ON public.approval_requests;
+DROP POLICY IF EXISTS "approval_requests_select_own" ON public.approval_requests;
+DROP POLICY IF EXISTS "approval_requests_update_superadmin" ON public.approval_requests;
+DROP POLICY IF EXISTS "approval_requests_insert" ON public.approval_requests;
+DROP POLICY IF EXISTS "applications_insert_public" ON public.applications;
+DROP POLICY IF EXISTS "applications_select_superadmin" ON public.applications;
+DROP POLICY IF EXISTS "applications_update_superadmin" ON public.applications;
+DROP POLICY IF EXISTS "session_requests_insert_author" ON public.session_requests;
+DROP POLICY IF EXISTS "session_requests_select_own" ON public.session_requests;
+DROP POLICY IF EXISTS "session_requests_select_superadmin" ON public.session_requests;
+DROP POLICY IF EXISTS "session_requests_update_superadmin" ON public.session_requests;
+DROP POLICY IF EXISTS "session_requests_insert_superadmin" ON public.session_requests;
+DROP POLICY IF EXISTS "session_requests_delete_superadmin" ON public.session_requests;
 
 -- -------------------------------------------------------
 -- PROFILES policies
@@ -223,7 +250,7 @@ CREATE POLICY "profiles_update_own"
     USING (auth.uid() = id)
     WITH CHECK (auth.uid() = id);
 
--- Superadmin can update ANY profile (for approvals, plan changes)
+-- Superadmin can update ANY profile (for approvals, plan changes, session_limit)
 CREATE POLICY "profiles_update_superadmin"
     ON public.profiles FOR UPDATE
     USING (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com')
@@ -292,13 +319,18 @@ CREATE POLICY "applications_update_superadmin"
 -- -------------------------------------------------------
 -- SESSION_REQUESTS policies
 -- -------------------------------------------------------
-ALTER TABLE public.session_requests ENABLE ROW LEVEL SECURITY;
 
 -- Authors can submit session requests
 CREATE POLICY "session_requests_insert_author"
     ON public.session_requests FOR INSERT
     TO authenticated
     WITH CHECK (auth.uid() = author_id);
+
+-- SuperAdmin can also create session requests for any author (proactive assignment)
+CREATE POLICY "session_requests_insert_superadmin"
+    ON public.session_requests FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com');
 
 -- Authors can view their own requests
 CREATE POLICY "session_requests_select_own"
@@ -319,8 +351,13 @@ CREATE POLICY "session_requests_update_superadmin"
     USING (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com')
     WITH CHECK (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com');
 
+-- Superadmin can delete session requests
+CREATE POLICY "session_requests_delete_superadmin"
+    ON public.session_requests FOR DELETE
+    TO authenticated
+    USING (auth.jwt() ->> 'email' = 'sajjadr742@gmail.com');
+
 -- ============================================================
 -- 13. ADMIN SETUP (run manually after superadmin signs up)
 -- ============================================================
 -- UPDATE public.profiles SET is_approved = true, role = 'author' WHERE email = 'sajjadr742@gmail.com';
-

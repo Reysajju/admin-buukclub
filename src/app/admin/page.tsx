@@ -20,6 +20,7 @@ interface ProfileData {
     full_name: string;
     email: string;
     plan: string;
+    session_limit: number;
     bio: string;
     book_name: string;
     avatar_url: string;
@@ -34,6 +35,7 @@ interface SessionRequest {
     message: string;
     status: 'pending' | 'approved' | 'rejected';
     room_link: string | null;
+    admin_notes: string | null;
     created_at: string;
 }
 
@@ -548,20 +550,23 @@ export default function AdminPage() {
                                                 </div>
                                                 <div className="flex items-center gap-4">
                                                     <span className={`text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-wider ${req.status === 'approved' ? 'bg-green-500 text-white' :
-                                                            req.status === 'rejected' ? 'bg-red-500 text-white' :
-                                                                'bg-orange-500 text-white'
+                                                        req.status === 'rejected' ? 'bg-red-500 text-white' :
+                                                            'bg-orange-500 text-white'
                                                         }`}>
                                                         {req.status}
                                                     </span>
                                                     {req.status === 'approved' && req.room_link && (
-                                                        <a
-                                                            href={req.room_link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                        <button
+                                                            onClick={() => {
+                                                                setRoomName(req.room_link || '');
+                                                                setBookTitle(req.book_title || '');
+                                                                setUserName(profile?.full_name || 'Author');
+                                                                setIsJoined(true);
+                                                            }}
                                                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition"
                                                         >
                                                             Join Live Studio
-                                                        </a>
+                                                        </button>
                                                     )}
                                                 </div>
                                             </div>
@@ -586,9 +591,9 @@ export default function AdminPage() {
                                         <p className="text-green-400 font-bold text-lg">✓ Active</p>
                                     </div>
                                     <div className="bg-gray-700/50 p-4 rounded-xl">
-                                        <p className="text-xs text-gray-500 uppercase mb-1">Sessions / Week</p>
+                                        <p className="text-xs text-gray-500 uppercase mb-1">Session Limit</p>
                                         <p className="text-white font-bold text-lg">
-                                            {{ basic: '1', standard: '2', premium: '4', platinum: '5' }[userPlan] || '1'}
+                                            {profile?.session_limit || 0}
                                         </p>
                                     </div>
                                 </div>
