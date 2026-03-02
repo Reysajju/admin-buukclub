@@ -7,6 +7,35 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
+-- 0.5 ADD MISSING COLUMNS TO EXISTING TABLES (safe to re-run)
+-- If tables already exist, CREATE TABLE IF NOT EXISTS won't add new columns.
+-- These ALTER TABLE statements add them safely.
+-- ============================================================
+DO $$
+BEGIN
+    -- Add session_limit to profiles if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='session_limit') THEN
+        ALTER TABLE public.profiles ADD COLUMN session_limit INTEGER DEFAULT 0;
+    END IF;
+
+    -- Add favorite_genre to waitlist if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='waitlist' AND column_name='favorite_genre') THEN
+        ALTER TABLE public.waitlist ADD COLUMN favorite_genre TEXT;
+    END IF;
+
+    -- Add books_per_year to waitlist if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='waitlist' AND column_name='books_per_year') THEN
+        ALTER TABLE public.waitlist ADD COLUMN books_per_year TEXT;
+    END IF;
+
+    -- Add ticket_code to waitlist if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='waitlist' AND column_name='ticket_code') THEN
+        ALTER TABLE public.waitlist ADD COLUMN ticket_code TEXT;
+    END IF;
+END;
+$$;
+
+-- ============================================================
 -- 1. PROFILES TABLE
 -- Stores user data for both authors and readers
 -- ============================================================

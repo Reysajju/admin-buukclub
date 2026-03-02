@@ -306,7 +306,7 @@ export default function SuperAdminPortal() {
                         className={`pb-3 px-3 md:px-4 font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'authors' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <Users className="h-4 w-4" />
-                        Authors ({approvedAuthors.length})
+                        All Authors ({profiles.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('sessions')}
@@ -389,14 +389,14 @@ export default function SuperAdminPortal() {
                             </div>
                         )
                     ) : activeTab === 'authors' ? (
-                        /* ========== ALL AUTHORS TAB (Onboarded) ========== */
-                        approvedAuthors.length === 0 ? (
+                        /* ========== ALL AUTHORS TAB ========== */
+                        profiles.length === 0 ? (
                             <div className="text-center py-20 bg-card rounded-xl border border-border">
-                                No onboarded (approved) authors found.
+                                No author accounts found.
                             </div>
                         ) : (
                             <div className="grid gap-4">
-                                {approvedAuthors.map((profile) => (
+                                {profiles.map((profile) => (
                                     <Card key={profile.id}>
                                         <CardContent className="p-6">
                                             <div className="flex flex-col md:flex-row items-start justify-between gap-6">
@@ -408,9 +408,15 @@ export default function SuperAdminPortal() {
                                                     <div>
                                                         <h3 className="font-bold text-lg flex items-center gap-2">
                                                             {profile.full_name || 'Anonymous Author'}
-                                                            <span className="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                                                Approved
-                                                            </span>
+                                                            {profile.is_approved ? (
+                                                                <span className="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                                    Approved
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                                    Pending
+                                                                </span>
+                                                            )}
                                                         </h3>
                                                         <p className="text-sm text-muted-foreground">{profile.email}</p>
                                                         <div className="flex items-center gap-4 mt-2 flex-wrap">
@@ -525,8 +531,8 @@ export default function SuperAdminPortal() {
                                                             <div key={s.id} className="flex items-center justify-between text-sm bg-muted/30 px-3 py-2 rounded-lg">
                                                                 <span className="truncate">{s.book_title || 'Untitled'}</span>
                                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${s.status === 'approved' ? 'bg-green-500 text-white' :
-                                                                        s.status === 'rejected' ? 'bg-red-500 text-white' :
-                                                                            'bg-orange-500 text-white'
+                                                                    s.status === 'rejected' ? 'bg-red-500 text-white' :
+                                                                        'bg-orange-500 text-white'
                                                                     }`}>
                                                                     {s.status}
                                                                 </span>
@@ -556,8 +562,8 @@ export default function SuperAdminPortal() {
                                                     <div className="flex items-center gap-3">
                                                         <h3 className="font-bold text-xl">{req.author_name}</h3>
                                                         <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${req.status === 'approved' ? 'bg-green-500 text-white' :
-                                                                req.status === 'rejected' ? 'bg-red-500 text-white' :
-                                                                    'bg-orange-500 text-white'
+                                                            req.status === 'rejected' ? 'bg-red-500 text-white' :
+                                                                'bg-orange-500 text-white'
                                                             }`}>
                                                             {req.status}
                                                         </span>
