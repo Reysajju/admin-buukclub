@@ -1,30 +1,32 @@
 -- ============================================================
--- BUUKCLUB DATABASE SETUP
+-- BUUKCLUB - FRESH DATABASE SETUP
+-- ⚠️ THIS DROPS ALL EXISTING TABLES AND RECREATES THEM
 -- Run this in Supabase SQL Editor
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Add missing columns to existing tables (safe to re-run)
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='session_limit') THEN
-        ALTER TABLE public.profiles ADD COLUMN session_limit INTEGER DEFAULT 0;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='waitlist' AND column_name='favorite_genre') THEN
-        ALTER TABLE public.waitlist ADD COLUMN favorite_genre TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='waitlist' AND column_name='books_per_year') THEN
-        ALTER TABLE public.waitlist ADD COLUMN books_per_year TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='waitlist' AND column_name='ticket_code') THEN
-        ALTER TABLE public.waitlist ADD COLUMN ticket_code TEXT;
-    END IF;
-END;
-$$;
+-- ============================================================
+-- DROP EVERYTHING (order matters due to foreign keys)
+-- ============================================================
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 
+DROP TABLE IF EXISTS public.session_requests CASCADE;
+DROP TABLE IF EXISTS public.approval_requests CASCADE;
+DROP TABLE IF EXISTS public.session_feedback CASCADE;
+DROP TABLE IF EXISTS public.live_chat_messages CASCADE;
+DROP TABLE IF EXISTS public.waitlist_comments CASCADE;
+DROP TABLE IF EXISTS public.contact_messages CASCADE;
+DROP TABLE IF EXISTS public.leads CASCADE;
+DROP TABLE IF EXISTS public.applications CASCADE;
+DROP TABLE IF EXISTS public.waitlist CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
+-- ============================================================
 -- 1. PROFILES
-CREATE TABLE IF NOT EXISTS public.profiles (
+-- ============================================================
+CREATE TABLE public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     full_name TEXT,
     email TEXT UNIQUE,
@@ -40,8 +42,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ============================================================
 -- 2. WAITLIST
-CREATE TABLE IF NOT EXISTS public.waitlist (
+-- ============================================================
+CREATE TABLE public.waitlist (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     name TEXT,
@@ -52,8 +56,10 @@ CREATE TABLE IF NOT EXISTS public.waitlist (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ============================================================
 -- 3. APPLICATIONS
-CREATE TABLE IF NOT EXISTS public.applications (
+-- ============================================================
+CREATE TABLE public.applications (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     email TEXT NOT NULL,
     name TEXT NOT NULL,
@@ -61,12 +67,14 @@ CREATE TABLE IF NOT EXISTS public.applications (
     followers INTEGER DEFAULT 0,
     pain_point TEXT,
     pitch TEXT,
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    status TEXT DEFAULT 'pending',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. LIVE CHAT MESSAGES
-CREATE TABLE IF NOT EXISTS public.live_chat_messages (
+-- ============================================================
+-- 4. LIVE CHAT
+-- ============================================================
+CREATE TABLE public.live_chat_messages (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     room_name TEXT NOT NULL,
     name TEXT NOT NULL,
@@ -75,8 +83,10 @@ CREATE TABLE IF NOT EXISTS public.live_chat_messages (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ============================================================
 -- 5. SESSION FEEDBACK
-CREATE TABLE IF NOT EXISTS public.session_feedback (
+-- ============================================================
+CREATE TABLE public.session_feedback (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     session_name TEXT NOT NULL,
     reader_name TEXT NOT NULL,
@@ -86,16 +96,20 @@ CREATE TABLE IF NOT EXISTS public.session_feedback (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ============================================================
 -- 6. WAITLIST COMMENTS
-CREATE TABLE IF NOT EXISTS public.waitlist_comments (
+-- ============================================================
+CREATE TABLE public.waitlist_comments (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name TEXT NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ============================================================
 -- 7. LEADS
-CREATE TABLE IF NOT EXISTS public.leads (
+-- ============================================================
+CREATE TABLE public.leads (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -106,7 +120,20 @@ CREATE TABLE IF NOT EXISTS public.leads (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. REALTIME
+-- ============================================================
+-- 8. CONTACT MESSAGES
+-- ============================================================
+CREATE TABLE public.contact_messages (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+-- 9. REALTIME (for live chat)
+-- ============================================================
 DO $$
 BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE live_chat_messages;
@@ -114,7 +141,9 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END;
 $$;
 
--- 9. AUTO-PROFILE TRIGGER
+-- ============================================================
+-- 10. AUTO-CREATE PROFILE ON SIGNUP
+-- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -135,36 +164,51 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 10. ROW LEVEL SECURITY
+-- ============================================================
+-- 11. RLS POLICIES
+-- ============================================================
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.live_chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.session_feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.waitlist_comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
--- Drop old policies
-DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
-DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
-DROP POLICY IF EXISTS "Super Admin can do everything on profiles" ON public.profiles;
-DROP POLICY IF EXISTS "profiles_select_public" ON public.profiles;
-DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
-DROP POLICY IF EXISTS "profiles_update_superadmin" ON public.profiles;
-DROP POLICY IF EXISTS "profiles_delete_superadmin" ON public.profiles;
-DROP POLICY IF EXISTS "profiles_insert_service" ON public.profiles;
-DROP POLICY IF EXISTS "Anyone can submit an application" ON public.applications;
-DROP POLICY IF EXISTS "Super Admin can view all applications" ON public.applications;
-DROP POLICY IF EXISTS "Super Admin can update applications" ON public.applications;
-DROP POLICY IF EXISTS "applications_insert_public" ON public.applications;
-DROP POLICY IF EXISTS "applications_select_superadmin" ON public.applications;
-DROP POLICY IF EXISTS "applications_update_superadmin" ON public.applications;
+-- Profiles: public read, self update, open insert (for trigger)
+CREATE POLICY "profiles_read" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "profiles_update" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "profiles_insert" ON public.profiles FOR INSERT WITH CHECK (true);
 
--- Profiles: anyone can read, users update their own, trigger inserts
-CREATE POLICY "profiles_select_public" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
-CREATE POLICY "profiles_insert_service" ON public.profiles FOR INSERT WITH CHECK (true);
+-- Waitlist: open insert, public read
+CREATE POLICY "waitlist_insert" ON public.waitlist FOR INSERT WITH CHECK (true);
+CREATE POLICY "waitlist_read" ON public.waitlist FOR SELECT USING (true);
 
--- Applications: anyone can submit, authenticated can view
-CREATE POLICY "applications_insert_public" ON public.applications FOR INSERT WITH CHECK (true);
-CREATE POLICY "applications_select_auth" ON public.applications FOR SELECT TO authenticated USING (true);
+-- Applications: open insert, authenticated read
+CREATE POLICY "applications_insert" ON public.applications FOR INSERT WITH CHECK (true);
+CREATE POLICY "applications_read" ON public.applications FOR SELECT TO authenticated USING (true);
+
+-- Live chat: open insert and read (public chat)
+CREATE POLICY "chat_insert" ON public.live_chat_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "chat_read" ON public.live_chat_messages FOR SELECT USING (true);
+
+-- Session feedback: open insert, authenticated read
+CREATE POLICY "feedback_insert" ON public.session_feedback FOR INSERT WITH CHECK (true);
+CREATE POLICY "feedback_read" ON public.session_feedback FOR SELECT TO authenticated USING (true);
+
+-- Waitlist comments: open insert and read
+CREATE POLICY "comments_insert" ON public.waitlist_comments FOR INSERT WITH CHECK (true);
+CREATE POLICY "comments_read" ON public.waitlist_comments FOR SELECT USING (true);
+
+-- Leads: open insert, authenticated read
+CREATE POLICY "leads_insert" ON public.leads FOR INSERT WITH CHECK (true);
+CREATE POLICY "leads_read" ON public.leads FOR SELECT TO authenticated USING (true);
+
+-- Contact messages: open insert, authenticated read
+CREATE POLICY "contact_insert" ON public.contact_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "contact_read" ON public.contact_messages FOR SELECT TO authenticated USING (true);
