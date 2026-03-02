@@ -1,0 +1,588 @@
+[
+    {
+        "category": "Getting Started",
+        "questions": [
+            {
+                "q": "What is BuukClub?",
+                "a": "BuukClub is a premium literary community that connects book lovers through curated monthly selections, exclusive author access, and intimate reading circles. We focus on quality over quantity."
+            },
+            {
+                "q": "How do I join BuukClub?",
+                "a": "Simply visit our Join page, fill out your reading preferences, and choose your membership tier. You'll receive your welcome kit within 5-7 business days."
+            },
+            {
+                "q": "Is BuukClub suitable for beginners?",
+                "a": "Absolutely! We welcome readers of all levels, from casual readers to literary enthusiasts. Our community is built on shared love for books, not reading speed."
+            },
+            {
+                "q": "What makes BuukClub different from other book clubs?",
+                "a": "BuukClub emphasizes intimate community building, direct author engagement, and carefully curated selections. We're not a mass-market service—we're a literary family."
+            },
+            {
+                "q": "Can I gift a BuukClub membership?",
+                "a": "Yes! Gift memberships are available for 3, 6, or 12 months. The recipient will receive a beautiful welcome package and can customize their genre preferences."
+            }
+        ]
+    },
+    {
+        "category": "Membership & Pricing",
+        "questions": [
+            {
+                "q": "How much does BuukClub membership cost?",
+                "a": "Our Basic tier starts at $19.99/month for one book. Premium ($34.99) includes two books plus exclusive content, and Elite ($49.99) offers three books with author Q&As."
+            },
+            {
+                "q": "Can I change my membership tier?",
+                "a": "Yes, you can upgrade or downgrade your membership at any time from your account dashboard. Changes take effect from your next billing cycle."
+            },
+            {
+                "q": "Is there a student discount?",
+                "a": "Yes! Full-time students receive 15% off any membership tier with valid student ID verification."
+            },
+            {
+                "q": "Do you offer family plans?",
+                "a": "Yes, our Family Plan allows up to 4 members in one household to share a membership at a 25% discount."
+            },
+            {
+                "q": "What payment methods do you accept?",
+                "a": "We accept all major credit cards, PayPal, Apple Pay, and Google Pay."
+            },
+            {
+                "q": "Is my payment information secure?",
+                "a": "Yes, we use industry-standard encryption and never store your full card details. All payments are processed through secure PCI-compliant gateways."
+            },
+            {
+                "q": "Can I pause my membership?",
+                "a": "Yes, you can pause for up to 3 months per year without losing your membership benefits or spot in exclusive events."
+            },
+            {
+                "q": "What is your refund policy?",
+                "a": "We offer a 30-day money-back guarantee for new members. If you're not satisfied with your first box, we'll refund you in full."
+            },
+            {
+                "q": "Are there any hidden fees?",
+                "a": "No, your membership price includes everything—books, shipping (domestic), and access to all digital content. No surprise charges."
+            },
+            {
+                "q": "Do membership prices change?",
+                "a": "We guarantee your rate for as long as you maintain continuous membership. Price changes only affect new members or those who cancel and rejoin."
+            }
+        ]
+    },
+    {
+        "category": "Book Selection & Curation",
+        "questions": [
+            {
+                "q": "How are books selected each month?",
+                "a": "Our literary team of editors and curators reviews hundreds of titles monthly, considering literary merit, member preferences, and emerging voices in literature."
+            },
+            {
+                "q": "Can I choose my own books?",
+                "a": "While we're a curated service, you can set genre preferences and create a wishlist. We take these into account but maintain editorial independence for quality."
+            },
+            {
+                "q": "What genres does BuukClub cover?",
+                "a": "We cover Literary Fiction, Historical Fiction, Mystery & Thriller, Science Fiction, Fantasy, Romance, Non-Fiction, Memoirs, Poetry, and Contemporary Fiction."
+            },
+            {
+                "q": "Do you include bestsellers?",
+                "a": "Sometimes, but our focus is on literary quality over commercial success. We often feature books before they become bestsellers."
+            },
+            {
+                "q": "Are indie and self-published books included?",
+                "a": "Yes! We actively seek exceptional indie titles that meet our quality standards. We believe great writing exists everywhere."
+            },
+            {
+                "q": "How diverse are your book selections?",
+                "a": "Diversity is core to our mission. We prioritize voices from different cultures, backgrounds, and perspectives to enrich our community's reading experience."
+            },
+            {
+                "q": "Do you feature debut authors?",
+                "a": "Absolutely! We love discovering and promoting new talent. Many of our past selections have launched successful literary careers."
+            },
+            {
+                "q": "Can I request specific authors or titles?",
+                "a": "Yes, we maintain a suggestion box and consider all recommendations. While we can't guarantee selection, we review every suggestion."
+            },
+            {
+                "q": "What if I already own the monthly selection?",
+                "a": "You can swap it for credit toward our bookstore, gift it to a friend, or donate it through our Books for Good program."
+            },
+            {
+                "q": "Do you reveal selections in advance?",
+                "a": "We announce the next month's pick on the 15th, giving members time to opt-out if they've already read it."
+            },
+            {
+                "q": "Are audiobook versions available?",
+                "a": "Premium and Elite members receive companion audiobook codes for most selections through our partnership with major audiobook providers."
+            }
+        ]
+    },
+    {
+        "category": "Shipping & Delivery",
+        "questions": [
+            {
+                "q": "Where does BuukClub ship?",
+                "a": "We ship to all 50 US states, Canada, UK, Australia, and most European countries. See our shipping page for the complete list."
+            },
+            {
+                "q": "How long does shipping take?",
+                "a": "Domestic orders arrive within 3-5 business days. International shipping takes 7-14 days depending on customs processing."
+            },
+            {
+                "q": "Is shipping free?",
+                "a": "Domestic shipping is included in your membership. International members pay a flat $10/month shipping fee."
+            },
+            {
+                "q": "Can I track my shipment?",
+                "a": "Yes, you'll receive tracking information via email as soon as your box ships, typically around the 25th of each month."
+            },
+            {
+                "q": "What if my book arrives damaged?",
+                "a": "Contact us within 7 days with photos, and we'll ship a replacement immediately at no cost."
+            },
+            {
+                "q": "Can I change my shipping address?",
+                "a": "Yes, update your address in account settings before the 20th of the month to ensure it applies to the current cycle."
+            },
+            {
+                "q": "Do you ship to PO boxes?",
+                "a": "Yes, we ship to both PO boxes and physical addresses."
+            },
+            {
+                "q": "What if I'm traveling when my box ships?",
+                "a": "You can request a shipping hold for up to 2 months. Your shipment will resume when you're ready."
+            },
+            {
+                "q": "How is the book packaged?",
+                "a": "Books are wrapped in protective materials and shipped in eco-friendly, recyclable packaging designed to prevent damage."
+            },
+            {
+                "q": "What if my package is lost?",
+                "a": "We'll investigate with the carrier and send a replacement if the original can't be located."
+            }
+        ]
+    },
+    {
+        "category": "Community & Events",
+        "questions": [
+            {
+                "q": "How does the online community work?",
+                "a": "Members access our private platform featuring discussion forums, reading guides, author AMAs, and monthly virtual meetups."
+            },
+            {
+                "q": "Are there in-person events?",
+                "a": "Yes! We host quarterly events in major cities, annual conferences, and support local chapter meetups worldwide."
+            },
+            {
+                "q": "Can I start a local BuukClub chapter?",
+                "a": "Absolutely! We provide discussion guides, promotional materials, and connect you with nearby members. Email us to get started."
+            },
+            {
+                "q": "Do authors participate in discussions?",
+                "a": "Premium and Elite members get exclusive access to monthly author Q&As, live readings, and behind-the-scenes content."
+            },
+            {
+                "q": "Is the community moderated?",
+                "a": "Yes, we maintain a respectful, inclusive environment. Our community guidelines ensure everyone feels welcome."
+            },
+            {
+                "q": "Can I connect with other members?",
+                "a": "Yes, our platform includes member profiles, direct messaging, and book buddy matching based on reading preferences."
+            },
+            {
+                "q": "Are there book clubs within BuukClub?",
+                "a": "Yes! Members can create or join micro-clubs focused on specific genres, themes, or reading speeds."
+            },
+            {
+                "q": "How do virtual meetups work?",
+                "a": "Monthly Zoom sessions led by moderators or special guests. Recordings are available for those who can't attend live."
+            },
+            {
+                "q": "Can I share my own writing?",
+                "a": "Elite members can share work-in-progress in our Writers' Circle, receiving feedback from fellow members and occasional author mentors."
+            },
+            {
+                "q": "Is there a mobile app?",
+                "a": "Yes, our iOS and Android apps let you access discussions, track reading progress, and connect with members on the go."
+            }
+        ]
+    },
+    {
+        "category": "Books & Formats",
+        "questions": [
+            {
+                "q": "Are books hardcover or paperback?",
+                "a": "We primarily send hardcover editions for new releases and quality paperbacks for backlist titles. Elite members can request hardcover-only."
+            },
+            {
+                "q": "Can I request large print editions?",
+                "a": "Yes, if available. Indicate this preference in your profile, and we'll accommodate when possible."
+            },
+            {
+                "q": "Do you offer ebooks?",
+                "a": "Premium and Elite members receive ebook versions of most selections in ePub and Kindle formats."
+            },
+            {
+                "q": "Are books signed?",
+                "a": "Occasionally! We secure signed editions when possible and announce these special treats in advance."
+            },
+            {
+                "q": "What condition are the books in?",
+                "a": "All books are brand new unless you specifically select our Pre-Loved option (available at 20% discount)."
+            },
+            {
+                "q": "Can I build a custom reading list?",
+                "a": "Yes, create multiple reading lists in your account and share them with friends or your book club."
+            },
+            {
+                "q": "Do you include reading guides?",
+                "a": "Every shipment includes exclusive reading guides with discussion questions, author insights, and thematic analysis."
+            },
+            {
+                "q": "Can I access past selections?",
+                "a": "Members get 20% off past selections in our bookstore. Elite members get 30% off."
+            },
+            {
+                "q": "Do you offer graphic novels?",
+                "a": "Yes! We dedicate one pick per quarter to exceptional graphic literature."
+            },
+            {
+                "q": "Can I receive books in different languages?",
+                "a": "Currently we offer English, Spanish, and French selections. Indicate your preference during signup."
+            }
+        ]
+    },
+    {
+        "category": "Account Management",
+        "questions": [
+            {
+                "q": "How do I cancel my membership?",
+                "a": "Cancel anytime from your account settings. Access to digital content continues until your billing cycle ends."
+            },
+            {
+                "q": "What happens to my account if I cancel?",
+                "a": "Your profile and reading history are saved for 12 months. Rejoin within that time to retain everything."
+            },
+            {
+                "q": "Can I reactivate a cancelled membership?",
+                "a": "Yes! Reactivate anytime within 12 months and pick up where you left off."
+            },
+            {
+                "q": "How do I update my email address?",
+                "a": "Navigate to Account Settings > Profile > Email. You'll receive a verification link at your new address."
+            },
+            {
+                "q": "Can I merge multiple accounts?",
+                "a": "Contact support and we'll merge your reading history, preferences, and membership benefits."
+            },
+            {
+                "q": "How do I reset my password?",
+                "a": "Click 'Forgot Password' on the login page. Check your email for reset instructions."
+            },
+            {
+                "q": "Can I change my username?",
+                "a": "Yes, once every 90 days from your profile settings."
+            },
+            {
+                "q": "How is my data used?",
+                "a": "We use your data solely to improve recommendations and services. We never sell your information. See our Privacy Policy for details."
+            },
+            {
+                "q": "Can I delete my account permanently?",
+                "a": "Yes. This action is irreversible and removes all data. Contact support to process permanent deletion."
+            },
+            {
+                "q": "How do I update my reading preferences?",
+                "a": "Update preferences monthly in your account. Changes apply to the following month's selection."
+            }
+        ]
+    },
+    {
+        "category": "Reading Tools & Features",
+        "questions": [
+            {
+                "q": "What is the Reading Goal Calculator?",
+                "a": "A tool that helps you set and track annual reading goals based on your reading speed, available time, and target number of books."
+            },
+            {
+                "q": "How does reading progress tracking work?",
+                "a": "Log pages or percentage completed in the app. We'll show your progress, estimate finish time, and celebrate milestones with you."
+            },
+            {
+                "q": "Can I create custom bookshelves?",
+                "a": "Yes, organize your library with unlimited custom shelves like 'To Read,' 'Favorites,' 'Recommendations,' etc."
+            },
+            {
+                "q": "Is there a notes feature?",
+                "a": "Premium and Elite members can save notes, highlights, and quotes while reading. Export them anytime."
+            },
+            {
+                "q": "Can I rate and review books?",
+                "a": "Yes! Rate books, write reviews, and see what other members thought. Your reviews help guide future selections."
+            },
+            {
+                "q": "Do you have a recommendation engine?",
+                "a": "Yes, our algorithm learns from your ratings and reading history to suggest books you'll love."
+            },
+            {
+                "q": "Can I create reading challenges?",
+                "a": "Yes! Join community challenges or create custom challenges for yourself or your book club."
+            },
+            {
+                "q": "Is there a reading streak feature?",
+                "a": "Yes, track consecutive days of reading and earn badges. Share milestones with the community."
+            },
+            {
+                "q": "Can I see my reading statistics?",
+                "a": "Yes, view detailed stats including books read, pages completed, genres explored, and reading pace over time."
+            },
+            {
+                "q": "Do you offer reading reminders?",
+                "a": "Set custom reading reminders via app notifications or email to help maintain your reading habit."
+            }
+        ]
+    },
+    {
+        "category": "Exclusives & Extras",
+        "questions": [
+            {
+                "q": "What exclusive content do members receive?",
+                "a": "Author interviews, behind-the-scenes writing process videos, deleted scenes, early book announcements, and exclusive short stories."
+            },
+            {
+                "q": "Do you offer early access to new releases?",
+                "a": "Elite members occasionally receive advance reader copies (ARCs) of highly anticipated titles."
+            },
+            {
+                "q": "Are there member-only discounts?",
+                "a": "Yes! Members get discounts on partner bookstores, literary festivals, writing workshops, and author events."
+            },
+            {
+                "q": "What are BuukClub Originals?",
+                "a": "Exclusive novellas, essays, and short story collections commissioned from popular authors, available only to members."
+            },
+            {
+                "q": "Can I access archived author sessions?",
+                "a": "Premium and Elite members have access to our complete library of past author Q&As and literary conversations."
+            },
+            {
+                "q": "What's included in the welcome kit?",
+                "a": "A beautiful tote bag, bookmark set, reading journal, membership card, and surprise literary goodie."
+            },
+            {
+                "q": "Do you offer literary workshops?",
+                "a": "Yes! Elite members get free access to monthly workshops on writing, critical reading, and literary analysis."
+            },
+            {
+                "q": "Are there writing contests?",
+                "a": "We host quarterly writing contests with categories for fiction, poetry, and creative non-fiction. Winners receive publication and prizes."
+            },
+            {
+                "q": "What is the Insider Newsletter?",
+                "a": "A weekly email featuring literary news, member spotlights, reading recommendations, and upcoming event announcements."
+            },
+            {
+                "q": "Do you partner with literary festivals?",
+                "a": "Yes, members get priority booking and discounts for major literary festivals and author tours worldwide."
+            }
+        ]
+    },
+    {
+        "category": "Corporate & Institutional",
+        "questions": [
+            {
+                "q": "Do you offer corporate memberships?",
+                "a": "Yes! Corporate packages are perfect for team building, office libraries, or employee benefits. Contact sales for custom pricing."
+            },
+            {
+                "q": "Can libraries partner with BuukClub?",
+                "a": "Yes, we offer institutional subscriptions with special pricing and programming support for public and academic libraries."
+            },
+            {
+                "q": "Do you support schools and educational programs?",
+                "a": "Yes! We have special programs for high schools and universities, including educator resources and student discounts."
+            },
+            {
+                "q": "Can businesses use BuukClub for client gifts?",
+                "a": "Absolutely! We offer corporate gifting with custom branding, bulk discounts, and personalized selection options."
+            },
+            {
+                "q": "Do you offer fundraising partnerships?",
+                "a": "Yes, we partner with literacy non-profits and libraries, donating a percentage of memberships sold through partner links."
+            }
+        ]
+    },
+    {
+        "category": "Technical Support",
+        "questions": [
+            {
+                "q": "What browsers are supported?",
+                "a": "Our platform works best on Chrome, Firefox, Safari, and Edge. We recommend keeping your browser updated."
+            },
+            {
+                "q": "Is the website mobile-friendly?",
+                "a": "Yes, our responsive design works seamlessly on tablets and smartphones, or use our dedicated mobile apps."
+            },
+            {
+                "q": "How do I report a technical issue?",
+                "a": "Use the 'Report a Problem' button in your account, or email support@buukclub.com with screenshots if possible."
+            },
+            {
+                "q": "Can I access my account from multiple devices?",
+                "a": "Yes, log in from any device. Your reading progress and preferences sync automatically."
+            },
+            {
+                "q": "What if I forgot my login credentials?",
+                "a": "Use the password reset feature. If you forgot your email, contact support with your membership details."
+            },
+            {
+                "q": "How do I enable notifications?",
+                "a": "Go to Settings > Notifications and customize email, push, and SMS preferences for updates and reminders."
+            },
+            {
+                "q": "Why can't I access certain features?",
+                "a": "Some features are tier-specific. Check your membership level or clear your browser cache and cookies."
+            },
+            {
+                "q": "Is there a dark mode?",
+                "a": "Yes! Enable dark mode in Settings > Appearance for comfortable night reading."
+            },
+            {
+                "q": "How do I download the mobile app?",
+                "a": "Search 'BuukClub' in the Apple App Store or Google Play Store. The app is free for all members."
+            },
+            {
+                "q": "What data does the app access?",
+                "a": "Only data necessary for functionality: account info, reading history, and optional camera access for book scanning. See our Privacy Policy."
+            }
+        ]
+    },
+    {
+        "category": "Billing & Invoices",
+        "questions": [
+            {
+                "q": "When will I be charged?",
+                "a": "Billing occurs on the same date each month when you joined. You'll receive an invoice via email 3 days before."
+            },
+            {
+                "q": "Can I get a receipt for my membership?",
+                "a": "Yes, receipts are automatically emailed after each payment. Access all past invoices in your account under Billing History."
+            },
+            {
+                "q": "What if my payment fails?",
+                "a": "We'll retry payment and email you. Update your payment method to avoid service interruption."
+            },
+            {
+                "q": "Can I change my billing date?",
+                "a": "Yes, contact support to adjust your billing cycle. This may prorate your next charge."
+            },
+            {
+                "q": "Do you offer annual billing?",
+                "a": "Yes! Save 20% by paying annually. Switch to annual billing from your account settings."
+            },
+            {
+                "q": "Are memberships tax-deductible?",
+                "a": "Personal memberships typically aren't, but donations through our literacy program are. Consult your tax advisor."
+            },
+            {
+                "q": "Can I split payments?",
+                "a": "Annual memberships can be split into quarterly payments with a small processing fee."
+            },
+            {
+                "q": "What currency do you bill in?",
+                "a": "We bill in USD, but international cards are accepted. Your bank handles currency conversion."
+            },
+            {
+                "q": "How do I apply a promo code?",
+                "a": "Enter promo codes during checkout or in Settings > Billing > Promo Codes. Codes apply to your next billing cycle."
+            },
+            {
+                "q": "What happens if I dispute a charge?",
+                "a": "Contact us first! We resolve most issues quickly. Chargebacks may result in account suspension pending resolution."
+            }
+        ]
+    },
+    {
+        "category": "Sustainability & Ethics",
+        "questions": [
+            {
+                "q": "Is BuukClub environmentally friendly?",
+                "a": "Yes! We use recycled packaging, partner with sustainable publishers, and offset shipping carbon emissions through verified programs."
+            },
+            {
+                "q": "What is your Books for Good program?",
+                "a": "For every 10 memberships, we donate books to underserved communities and schools. We've donated over 50,000 books to date."
+            },
+            {
+                "q": "Do you support diverse authors?",
+                "a": "Absolutely. We actively promote marginalized voices and ensure diverse representation in our selections and author partnerships."
+            },
+            {
+                "q": "Are your books sourced ethically?",
+                "a": "Yes, we only work with publishers committed to fair labor practices and sustainable production methods."
+            },
+            {
+                "q": "Can I donate unwanted books?",
+                "a": "Yes! Our book recycling program accepts gentle-used books for donation to libraries, schools, and literacy programs."
+            },
+            {
+                "q": "Do you pay authors fairly?",
+                "a": "We advocate for fair author compensation and spotlight the importance of supporting writers through legitimate purchases."
+            },
+            {
+                "q": "How do you choose publishing partners?",
+                "a": "We prioritize independent presses, diverse-owned publishers, and companies with demonstrated commitments to equity and sustainability."
+            },
+            {
+                "q": "What's your stance on banned books?",
+                "a": "We believe in intellectual freedom and frequently feature challenged or banned books with educational context for members."
+            }
+        ]
+    },
+    {
+        "category": "Troubleshooting & Common Issues",
+        "questions": [
+            {
+                "q": "I didn't receive my book this month",
+                "a": "Check your tracking info first. If it shows delivered but you didn't receive it, contact support immediately for a replacement."
+            },
+            {
+                "q": "I moved but forgot to update my address",
+                "a": "Contact support right away. We may be able to intercept the shipment or send a replacement to your new address."
+            },
+            {
+                "q": "The book I received isn't what I expected",
+                "a": "Read the book description and give it 50 pages—many members discover new favorites this way! Still not for you? Use it as a swap credit."
+            },
+            {
+                "q": "I was charged twice",
+                "a": "Contact support with your transaction IDs. We'll investigate and refund duplicate charges within 3-5 business days."
+            },
+            {
+                "q": "My discount code isn't working",
+                "a": "Verify the code hasn't expired, you meet requirements (new member, specific tier, etc.), and it's entered correctly (case-sensitive)."
+            },
+            {
+                "q": "I can't log into my account",
+                "a": "Try resetting your password. Still having issues? Clear your browser cache or try a different browser. Contact support if problems persist."
+            },
+            {
+                "q": "The app keeps crashing",
+                "a": "Update to the latest app version, restart your device, and ensure you have stable internet. Report persistent issues to tech support."
+            },
+            {
+                "q": "I'm moving internationally",
+                "a": "International shipping is available! Update your address and review the shipping fee (varies by country). Your membership continues uninterrupted."
+            },
+            {
+                "q": "I received a damaged book",
+                "a": "We're sorry! Email photos to support@buukclub.com within 7 days for a free replacement."
+            },
+            {
+                "q": "I want to change my membership but can't see the option",
+                "a": "Tier changes may be restricted during promotional periods or if you're on a gifted membership. Contact support for assistance."
+            }
+        ]
+    }
+]
