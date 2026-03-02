@@ -111,7 +111,6 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment, u
 
     // Gradual Viewer Growth logic (0 to target over 5-10 mins)
     useEffect(() => {
-        if (!isHost) return; // Only host sets viewer count naturally for now (or sync it later)
         const rampDuration = (5 + Math.random() * 5) * 60 * 1000; // 5-10 mins in ms
         const rampInterval = 2000; // Update every 2s
         const totalSteps = rampDuration / rampInterval;
@@ -121,10 +120,10 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment, u
             setViewerCount((prev) => {
                 if (prev >= targetViewerCount) {
                     // Small fluctuation after reaching target
-                    const change = Math.floor(Math.random() * 5) - 2;
-                    return Math.max(targetViewerCount - 10, prev + change);
+                    const nextVal = prev + Math.floor(Math.random() * 5) + 1;
+                    return Math.max(targetViewerCount - 10, nextVal);
                 }
-                return Math.min(targetViewerCount, prev + (incrementPerStep * (Math.random() * 1.5)));
+                return Math.floor(Math.min(targetViewerCount, prev + (incrementPerStep * (Math.random() * 1.5))));
             });
         }, rampInterval);
 
