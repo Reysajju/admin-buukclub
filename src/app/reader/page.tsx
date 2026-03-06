@@ -7,21 +7,14 @@ import LiveChat from '@/components/LiveChat';
 import FeedbackSurvey from '@/components/FeedbackSurvey';
 import { MessageSquare, X, LogOut } from 'lucide-react';
 
-interface Comment {
-    id: string;
-    name: string;
-    message: string;
-    avatar: string;
-}
-
 function ReaderContent() {
     const searchParams = useSearchParams();
     const roomParam = searchParams.get('room');
+    const docParam = searchParams.get('doc'); // Optional: shared document URL from invite link
 
     const [roomName, setRoomName] = useState(() => roomParam ?? '');
     const [isJoined, setIsJoined] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(true);
-    const [latestComment, setLatestComment] = useState<Comment | null>(null);
     const [showSurvey, setShowSurvey] = useState(false);
     const [hostName, setHostName] = useState('');
 
@@ -37,11 +30,7 @@ function ReaderContent() {
 
     const handleDisconnect = () => {
         setIsJoined(false);
-        setShowSurvey(true); // Show survey when leaving
-    };
-
-    const handleNewComment = (comment: Comment) => {
-        setLatestComment(comment);
+        setShowSurvey(true);
     };
 
     if (!isJoined) {
@@ -50,7 +39,7 @@ function ReaderContent() {
                 <div className="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-700">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-white mb-2">Join as Reader</h1>
-                        <p className="text-gray-400">Watch the stream and chat with others</p>
+                        <p className="text-gray-400">Watch the stream and enjoy the session</p>
                     </div>
 
                     <form onSubmit={handleJoin} className="space-y-6">
@@ -94,7 +83,7 @@ function ReaderContent() {
     }
 
     return (
-        <div className="h-screen bg-black flex overflow-hidden relative">
+        <div className="h-screen bg-black flex flex-col md:flex-row overflow-hidden relative">
             {/* Header / Leave Button */}
             <div className="absolute top-4 left-4 z-50">
                 <button
@@ -106,13 +95,14 @@ function ReaderContent() {
                 </button>
             </div>
 
-            {/* Video Area */}
-            <div className={`flex-1 relative transition-all duration-300 h-full ${isChatOpen ? 'mr-0 md:mr-[350px]' : 'mr-0'}`}>
+            {/* Video Area — reader is subscriber only (no cam/mic) */}
+            <div className={`relative transition-all duration-300 ${isChatOpen ? 'h-[50vh] md:h-full w-full md:flex-1' : 'h-full w-full flex-1'}`}>
                 <VideoRoom
                     roomName={roomName}
                     onDisconnect={handleDisconnect}
-                    latestComment={latestComment}
-                    isPublisher={false} // Reader Mode: View only
+                    isPublisher={false}
+                    manuscriptUrl={docParam || undefined}
+                    manuscriptName="Shared Document"
                 />
 
                 {/* Toggle Chat Button */}
@@ -125,14 +115,13 @@ function ReaderContent() {
                 </button>
             </div>
 
-            {/* Chat Sidebar */}
+            {/* Chat Sidebar — readers can interact with real messages alongside AI comments */}
             <div
-                className={`fixed inset-y-0 right-0 w-full md:w-[350px] bg-gray-900 border-l border-gray-800 transform transition-transform duration-300 z-40 ${isChatOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`w-full md:w-[350px] bg-gray-900 border-t md:border-t-0 md:border-l border-gray-800 transition-all duration-300 z-40 ${isChatOpen ? 'h-[50vh] md:h-full translate-y-0 md:translate-x-0' : 'h-0 md:h-full md:translate-x-full hidden md:block'
                     }`}
             >
                 <LiveChat
                     topic={roomName}
-                    onNewComment={handleNewComment}
                     userName="Reader"
                     isHost={false}
                 />

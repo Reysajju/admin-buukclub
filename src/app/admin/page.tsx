@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import VideoRoom from '@/components/VideoRoom';
 import LiveChat from '@/components/LiveChat';
 import { X, MessageSquare, LogOut, Upload, User, BookOpen, Link2, Settings } from 'lucide-react';
@@ -32,9 +32,11 @@ export default function AdminPage() {
     const [isJoined, setIsJoined] = useState(false);
     const [bookTitle, setBookTitle] = useState('');
     const [transcript, setTranscript] = useState('');
-    const [latestComment, setLatestComment] = useState<Comment | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(true);
+    const [sessionWarning, setSessionWarning] = useState(false);
     const [manuscriptName, setManuscriptName] = useState('');
+    const [manuscriptUrl, setManuscriptUrl] = useState('');
+    const [viewerCount, setViewerCount] = useState(0);
     const [showSurvey, setShowSurvey] = useState(false);
     const [lastSessionName, setLastSessionName] = useState('');
     const [lastAuthorName, setLastAuthorName] = useState('');
@@ -109,6 +111,37 @@ export default function AdminPage() {
         setIsJoined(true);
     };
 
+    const handleDisconnectRef = useRef<(() => void) | null>(null);
+    useEffect(() => {
+        handleDisconnectRef.current = handleDisconnect;
+    });
+
+    useEffect(() => {
+        if (!isJoined) {
+            setSessionWarning(false);
+            return;
+        }
+
+        // Show warning at 25 minutes
+        const warningTimer = setTimeout(() => {
+            setSessionWarning(true);
+        }, 25 * 60 * 1000);
+
+        // Auto-disconnect at 30 minutes
+        const endTimer = setTimeout(() => {
+            alert('Your 30-minute session limit has been reached. Please upgrade for longer sessions.');
+            if (handleDisconnectRef.current) {
+                handleDisconnectRef.current();
+            }
+        }, 30 * 60 * 1000);
+
+        return () => {
+            clearTimeout(warningTimer);
+            clearTimeout(endTimer);
+            setSessionWarning(false);
+        };
+    }, [isJoined]);
+
     const handleDisconnect = () => {
         setLastSessionName(roomName);
         setLastAuthorName(userName);
@@ -116,18 +149,24 @@ export default function AdminPage() {
         setIsJoined(false);
         setRoomName('');
         setTranscript('');
+        // Revoke blob URL — file disappears after session
+        if (manuscriptUrl) {
+            URL.revokeObjectURL(manuscriptUrl);
+            setManuscriptUrl('');
+        }
         setManuscriptName('');
         setDashboardView('dashboard');
     };
 
-    const handleNewComment = (comment: Comment) => {
-        setLatestComment(comment);
-    };
+
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setManuscriptName(file.name);
+            // Create temp blob URL — lives only in browser memory, gone on session end
+            const blobUrl = URL.createObjectURL(file);
+            setManuscriptUrl(blobUrl);
         }
     };
 
@@ -150,8 +189,21 @@ export default function AdminPage() {
     if (isJoined) {
         return (
             <>
-                <div className="h-screen bg-black flex overflow-hidden relative">
-                    <div className="absolute top-4 left-4 z-50 flex gap-3">
+                <div className="h-screen bg-black flex flex-col md:flex-row overflow-hidden relative">
+                    {sessionWarning && (
+                        <div className="absolute top-16 md:top-4 left-1/2 -translate-x-1/2 z-[60] bg-orange-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
+                            <span className="text-xl">⚠️</span>
+                            <div>
+                                <p className="font-bold text-sm">Session ending soon!</p>
+                                <p className="text-xs opacity-90">Please upgrade for sessions longer than 30 minutes.</p>
+                            </div>
+                            <button onClick={() => setSessionWarning(false)} className="ml-2 p-1 hover:bg-white/20 rounded-lg">
+                                <X size={14} />
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="absolute top-4 left-4 z-50 flex flex-wrap gap-2 md:gap-3">
                         <button
                             onClick={handleDisconnect}
                             className="flex items-center gap-2 px-4 py-2 bg-red-600/90 hover:bg-red-700 text-white rounded-lg shadow-lg backdrop-blur-sm transition font-medium text-sm"
@@ -168,11 +220,15 @@ export default function AdminPage() {
                         </button>
                     </div>
 
-                    <div className={`flex-1 relative transition-all duration-300 h-full ${isChatOpen ? 'mr-0 md:mr-[350px]' : 'mr-0'}`}>
+                    {/* Video Area */}
+                    <div className={`relative transition-all duration-300 ${isChatOpen ? 'h-[50vh] md:h-full w-full md:flex-1' : 'h-full w-full flex-1'}`}>
                         <VideoRoom
                             roomName={roomName}
                             onDisconnect={handleDisconnect}
-                            latestComment={latestComment}
+                            onTranscriptUpdate={(text) => setTranscript(text)}
+                            manuscriptUrl={manuscriptUrl}
+                            manuscriptName={manuscriptName}
+                            viewerCount={viewerCount}
                         />
 
                         <button
@@ -184,15 +240,16 @@ export default function AdminPage() {
                         </button>
                     </div>
 
+                    {/* Chat Area */}
                     <div
-                        className={`fixed inset-y-0 right-0 w-full md:w-[350px] bg-gray-900 border-l border-gray-800 transform transition-transform duration-300 z-40 ${isChatOpen ? 'translate-x-0' : 'translate-x-full'
+                        className={`w-full md:w-[350px] bg-gray-900 border-t md:border-t-0 md:border-l border-gray-800 transition-all duration-300 z-40 ${isChatOpen ? 'h-[50vh] md:h-full translate-y-0 md:translate-x-0' : 'h-0 md:h-full md:translate-x-full hidden md:block'
                             }`}
                     >
                         <LiveChat
                             topic={roomName}
                             bookTitle={bookTitle}
                             transcript={transcript}
-                            onNewComment={handleNewComment}
+                            onViewerCountUpdate={(count: number) => setViewerCount(count)}
                             userName={userName}
                             isHost={true}
                         />

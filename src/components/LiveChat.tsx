@@ -24,7 +24,7 @@ interface LiveChatProps {
     topic?: string;
     bookTitle?: string;
     transcript?: string;
-    onNewComment?: (comment: Comment) => void;
+    onViewerCountUpdate?: (count: number) => void;
     userName?: string;
     isHost?: boolean;
 }
@@ -40,7 +40,7 @@ const AVATAR_COLORS = [
     'bg-teal-500',
 ];
 
-export default function LiveChat({ topic, bookTitle, transcript, onNewComment, userName = 'Guest', isHost = false }: LiveChatProps) {
+export default function LiveChat({ topic, bookTitle, transcript, onViewerCountUpdate, userName = 'Guest', isHost = false }: LiveChatProps) {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [viewerCount, setViewerCount] = useState(0);
@@ -83,19 +83,25 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment, u
                         isCommunityMember: true,
                     };
                     setComments((prev) => [...prev, loyalComment]);
-                    if (onNewComment) onNewComment(loyalComment);
                 }, (index + 1) * (Math.random() * 2000 + 500)); // 0.5s to 2.5s delay per comment
             });
 
         } catch (error) {
             console.error('Failed to generate comments:', error);
         }
-    }, [topic, bookTitle, transcript, onNewComment]);
+    }, [topic, bookTitle, transcript]);
 
     // Auto-scroll to bottom
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [comments]);
+
+    // Emit viewer count updates to parent
+    useEffect(() => {
+        if (onViewerCountUpdate) {
+            onViewerCountUpdate(viewerCount);
+        }
+    }, [viewerCount, onViewerCountUpdate]);
 
     // Auto-generate comments after 2-3 mins of joining (Host only)
     useEffect(() => {
@@ -194,7 +200,6 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment, u
                         isCommunityMember: false,
                     };
                     setComments((prev) => [...prev, incomingComment]);
-                    if (onNewComment) onNewComment(incomingComment);
                 }
             })
             .subscribe();
@@ -202,7 +207,7 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment, u
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [topic, userName, onNewComment]);
+    }, [topic, userName]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -219,7 +224,6 @@ export default function LiveChat({ topic, bookTitle, transcript, onNewComment, u
         };
 
         setComments((prev) => [...prev, userComment]);
-        if (onNewComment) onNewComment(userComment);
 
         const messageToSend = newMessage;
         setNewMessage('');

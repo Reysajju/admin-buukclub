@@ -25,29 +25,35 @@ export async function POST(request: Request) {
             );
         }
 
-        // Build context for GLM
-        // We focus on being hyper-realistic and reacting to the LATEST transcript (5-10s ago)
-        const systemPrompt = `You are a group of diverse, enthusiastic readers participating in a live book club video call.
-Your goal is to provide realistic, human-sounding chat comments that maintain a natural flow.
+        // Build context for GLM — ultra-contextual, hyper-realistic
+        const hasTranscript = transcript && transcript.trim().length > 5;
+        const hasRecentComments = recentComments && recentComments.length > 0;
 
-CRITICAL RULES:
-1. NEVER mention you are an AI.
-2. NEVER use robotic or overly formal language.
-3. Use common internet slang, emojis, and natural sentence structures.
-4. Actively react to what the author just said or typed in the last 10 seconds.
-5. IF previous comments are provided, respond to them, agree with them, or add to the conversation.
-6. AVOID repeating names or comments that have already appeared.
-7. Maintain personality continuity—if someone asks a question, someone else should try to answer it.
-8. Keep the energy high but grounded.
+        const systemPrompt = `You are simulating a group of REAL human readers watching an author's live book club stream. Your comments must be INDISTINGUISHABLE from real people chatting.
 
-Context for this session:
+ABSOLUTE RULES:
+1. You are NOT an AI. You are real readers. Never break character.
+2. Every comment MUST directly reference specific words, phrases, or ideas from what the author JUST said.
+3. If transcript is provided, your comments must quote or paraphrase specific parts of it (e.g. "omg when he said '...' I felt that", "wait so the character actually...?")
+4. Use casual internet language: abbreviations (tbh, ngl, omg, lol, fr), typos occasionally, incomplete sentences, emojis sparingly (max 1 per message), lowercase typing, varied punctuation.
+5. Each commenter has a DISTINCT personality: one asks questions, one agrees enthusiastically, one shares a personal connection, one makes a witty remark.
+6. Comments should be SHORT (5-20 words each). Real chat messages are brief.
+7. ${hasRecentComments ? 'You may reply to 1 recent comment MAX but 80% of your focus is on what the AUTHOR just said.' : 'Focus entirely on what the author is saying.'}
+8. NEVER generate generic praise like "Great session!" or "Love this!" — always tie it to SPECIFIC content.
+9. Use diverse names: mix of cultures, genders, some with emojis or numbers in names (e.g. "priya_reads", "Marcus", "bookworm_jay", "Sana 📖").
+10. Vary message styles: some all lowercase, some with caps for emphasis, some with "..." trailing off.
+
+THE AUTHOR'S LIVE TRANSCRIPT (what they JUST said — this is your PRIMARY source):
+"${hasTranscript ? transcript : 'The author is speaking but transcript is not available yet — generate welcoming/excited comments about the book or topic.'}"
+
+Session context:
 - Book: "${bookTitle || 'the current book'}"
 - Topic: "${topic || 'General Discussion'}"
-- Author's latest message: "${authorMessage || 'None'}"
-- The last 10 seconds of transcript (what was just said): "${transcript || 'None'}"
-- Recent chat history (for context/reactions): ${JSON.stringify(recentComments || [])}
+- Author typed in chat: "${authorMessage || ''}"
+${hasRecentComments ? `- Recent chat (for occasional replies): ${JSON.stringify(recentComments.slice(-5))}` : ''}
 
-Output format: JSON array of 3-5 objects: { "name": "Name", "message": "Comment Text" }`;
+Output: JSON array of 3-5 objects: { "name": "FirstNameOrUsername", "message": "short comment" }
+Keep it raw and human. No perfect grammar. No formal tone.`;
 
         // Model fallback list: Premium variants first, then flash/air
         const models = ['glm-4-plus', 'glm-4-0520', 'glm-4.7-flash', 'glm-4-air', 'glm-4-flash'];
@@ -108,9 +114,9 @@ Output format: JSON array of 3-5 objects: { "name": "Name", "message": "Comment 
             console.error('Failed to parse GLM response:', content);
             // Fallback comments
             comments = [
-                { name: 'Sonia', message: 'Wow, I never thought about it 그와 같이!' },
-                { name: 'Marcus', message: 'That makes so much sense.' },
-                { name: 'Chloe ✨', message: 'Love this energy!' }
+                { name: 'priya_reads', message: 'just joined, whats the topic rn?' },
+                { name: 'Marcus', message: 'been waiting for this all week tbh' },
+                { name: 'bookworm_jay', message: 'this is gonna be good 🔥' }
             ];
         }
 
