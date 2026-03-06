@@ -3,10 +3,14 @@
 import { useState, useEffect } from 'react';
 import {
     LiveKitRoom,
-    VideoConference,
     RoomAudioRenderer,
     useRemoteParticipants,
+    useTracks,
+    GridLayout,
+    ParticipantTile,
+    ControlBar
 } from '@livekit/components-react';
+import { Track } from 'livekit-client';
 import '@livekit/components-styles';
 import TranscriptionManager from './TranscriptionManager';
 import DocumentViewer from './DocumentViewer';
@@ -56,6 +60,23 @@ function SessionMonitor({ isPublisher, onDisconnect }: { isPublisher: boolean, o
     }
 
     return null;
+}
+
+// A clean video grid without built-in chat or participant lists to ensure total privacy
+function CustomVideoView() {
+    const tracks = useTracks(
+        [
+            { source: Track.Source.Camera, withPlaceholder: true },
+            { source: Track.Source.ScreenShare, withPlaceholder: false },
+        ],
+        { onlySubscribed: false }
+    );
+
+    return (
+        <GridLayout tracks={tracks} style={{ height: '100%', width: '100%' }}>
+            <ParticipantTile />
+        </GridLayout>
+    );
 }
 
 export default function VideoRoom({
@@ -178,15 +199,22 @@ export default function VideoRoom({
         >
             {/* ========== AUTHOR VIEW (Publisher) ========== */}
             {isPublisher && (
-                <>
-                    <VideoConference />
-                    <RoomAudioRenderer />
+                <div className="w-full h-full flex flex-col pt-16 md:pt-0">
+                    <div className="flex-1 relative min-h-0">
+                        <CustomVideoView />
+                        <RoomAudioRenderer />
 
-                    {/* Viewer count badge — author only sees count, never names */}
-                    <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm">
-                        <Eye size={14} className="text-red-400" />
-                        <span className="font-medium">{viewerCount.toLocaleString()}</span>
-                        <span className="text-gray-400 text-xs">watching</span>
+                        {/* Viewer count badge — author only sees count, never names */}
+                        <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm">
+                            <Eye size={14} className="text-red-400" />
+                            <span className="font-medium">{viewerCount.toLocaleString()}</span>
+                            <span className="text-gray-400 text-xs">watching</span>
+                        </div>
+                    </div>
+
+                    {/* Author controls (Mic/Cam only, no chat or participants list) */}
+                    <div className="bg-gray-950 border-t border-gray-800 p-2 flex justify-center shrink-0">
+                        <ControlBar controls={{ microphone: true, camera: true, chat: false, screenShare: false, leave: false }} />
                     </div>
 
                     {/* Transcription for context-aware comments */}
@@ -196,7 +224,7 @@ export default function VideoRoom({
                             isListening={isListening}
                         />
                     )}
-                </>
+                </div>
             )}
 
             {/* ========== READER VIEW (Subscriber) ========== */}
@@ -211,8 +239,8 @@ export default function VideoRoom({
                             <button
                                 onClick={() => setReaderView('author')}
                                 className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${readerView === 'author'
-                                        ? 'bg-blue-600 text-white shadow-lg'
-                                        : 'text-gray-400 hover:text-white'
+                                    ? 'bg-blue-600 text-white shadow-lg'
+                                    : 'text-gray-400 hover:text-white'
                                     }`}
                             >
                                 <Video size={14} />
@@ -221,8 +249,8 @@ export default function VideoRoom({
                             <button
                                 onClick={() => setReaderView('document')}
                                 className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${readerView === 'document'
-                                        ? 'bg-blue-600 text-white shadow-lg'
-                                        : 'text-gray-400 hover:text-white'
+                                    ? 'bg-blue-600 text-white shadow-lg'
+                                    : 'text-gray-400 hover:text-white'
                                     }`}
                             >
                                 <FileText size={14} />
@@ -233,7 +261,9 @@ export default function VideoRoom({
 
                     {/* Show author video or document based on reader choice */}
                     {readerView === 'author' || !manuscriptUrl ? (
-                        <VideoConference />
+                        <div className="w-full h-full pt-16 md:pt-0">
+                            <CustomVideoView />
+                        </div>
                     ) : (
                         <DocumentViewer
                             fileUrl={manuscriptUrl}
